@@ -4,6 +4,7 @@ Everything related to MGFM usage after training/tuning and inference-time optimi
 
 ## Get Started
 
+The following steps show an example workflow starting on a new vast instance.
 ```shell
 sudo apt install gh
 gh auth login
