@@ -8,11 +8,11 @@ from transformers import \
     GPTQConfig, \
     BitsAndBytesConfig
 
-DATASET_DIR = "/workspace/metagenomic/data/sanity_check/cleaned_tokens_2000000000.txt"
-TOKENIZER_CKPT_DIR = "/workspace/metagenomic/model_ckpts/step-00078000/"
-MODEL_CKPT_DIR = "/workspace/metagenomic/model_ckpts/converted_safetensors/step-00078000/"
-GPTQ_MODEL_CKPT_DIR = "/workspace/metagenomic/model_ckpts/converted_safetensors/gptq_safetensors/step-00078000"
-NF4_MODEL_CKPT_DIR = "/workspace/metagenomic/model_ckpts/converted_safetensors/nf4_safetensors/step-00078000"
+DATASET_DIR = "/workspace/MGFM/data/sanity_check/cleaned_tokens_2000000000.txt"
+TOKENIZER_CKPT_DIR = "/workspace/MGFM/model_ckpts/step-00078000/"
+ST_CKPT_DIR = "/workspace/MGFM/model_ckpts/converted_safetensors/step-00078000/"
+GPTQ_ST_CKPT_DIR = "/workspace/MGFM/model_ckpts/converted_safetensors/gptq_safetensors/step-00078000"
+NF4_ST_CKPT_DIR = "/workspace/MGFM/model_ckpts/converted_safetensors/nf4_safetensors/step-00078000"
 
 parser = argparse.ArgumentParser(description="Quantization type")
 parser.add_argument("--quant_type", type=str, required=True, help="Quantization type")
@@ -59,11 +59,11 @@ if args.quant_type == "gptq":
     )
     # GPTQ quantized model
     gptq_quantized_model = AutoModelForCausalLM.from_pretrained(
-        MODEL_CKPT_DIR,
+        ST_CKPT_DIR,
         quantization_config=gptq_quant_config,
         device_map="auto"
     )
-    gptq_quantized_model.save_pretrained(GPTQ_MODEL_CKPT_DIR)
+    gptq_quantized_model.save_pretrained(GPTQ_ST_CKPT_DIR)
 elif args.quant_type == "nf4":
     start_time = time.time()
     print(f"START: quantizing the model using {args.quant_type}")
@@ -76,11 +76,11 @@ elif args.quant_type == "nf4":
     )
     # NF4 quantized model
     nf4_quantized_model = AutoModelForCausalLM.from_pretrained(
-        MODEL_CKPT_DIR,
+        ST_CKPT_DIR,
         quantization_config=nf4_quant_config,
         device_map="auto"
     )
-    nf4_quantized_model.save_pretrained(NF4_MODEL_CKPT_DIR)
+    nf4_quantized_model.save_pretrained(NF4_ST_CKPT_DIR)
 
 print(f"SUCCESS: model quantized using {args.quant_type}")
 end_time = time.time()
