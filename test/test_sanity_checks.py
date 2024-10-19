@@ -12,6 +12,7 @@ from transformers import AutoConfig, AutoModelForCausalLM, PreTrainedTokenizerFa
 
 parser = argparse.ArgumentParser(description="Sanity check model format")
 parser.add_argument("--model_format", type=str, required=True, help="Model format for sanity check")
+parser.add_argument("--batch_size", type=int, required=True, help="Batch size for sanity check")
 args = parser.parse_args()
 
 # TO USE THIS SCRIPT, PLEASE CHANGE THE FOLLOWING DIRECTORIES
@@ -32,7 +33,7 @@ DATASET_DIR = "/workspace/MGFM/data/sanity_check/cleaned_tokens_2000000000.txt"
 TOKENIZER_CKPT_DIR = "/workspace/MGFM/model_ckpts/step-00078000/"
 
 N = 1000 # Dataset Size
-B = 32 # Batch Size
+B = int(args.batch_size) # Batch Size
 CTX_LEN = 12 # Context Length
 GEN_LEN = 20 # Generation Length
 
