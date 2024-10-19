@@ -12,6 +12,7 @@ gh auth login
 ```shell
 cd /workspace
 gh repo clone MetagenomicFM/MGFM-serving -- --recurse-submodules
+cd ./MGFM-serving
 find ./ -type f -name "*.sh" -exec chmod +x {} +
 ```
 
