@@ -18,6 +18,9 @@ find ./ -type f -name "*.sh" -exec chmod +x {} +
 
 ```shell
 ./vast-utilities/basic_setup/set_zsh_conda.sh
+```
+
+```shell
 ./vast-utilities/dev_setup/set_aws_wasabi.sh
 ./vast-utilities/dev_setup/get_model_ckpt.sh
 ```
