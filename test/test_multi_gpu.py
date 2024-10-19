@@ -19,16 +19,16 @@ parser = argparse.ArgumentParser(description="Multi GPU test model format")
 parser.add_argument("--model_format", type=str, required=True, help="Model format for multi gpu test")
 args = parser.parse_args()
 if args.model_format == "st":
-    CKPT_DIR = "/workspace/metagenomic/model_ckpts/converted_safetensors/step-00078000/"
+    CKPT_DIR = "/workspace/MGFM/model_ckpts/converted_safetensors/step-00078000/"
 elif args.model_format == "st_gptq":
-    CKPT_DIR = "/workspace/metagenomic/model_ckpts/converted_safetensors/gptq_safetensors/step-00078000/"
+    CKPT_DIR = "/workspace/MGFM/model_ckpts/converted_safetensors/gptq_safetensors/step-00078000/"
 elif args.model_format == "st_nf4":
-    CKPT_DIR = "/workspace/metagenomic/model_ckpts/converted_safetensors/nf4_safetensors/step-00078000/"
+    CKPT_DIR = "/workspace/MGFM/model_ckpts/converted_safetensors/nf4_safetensors/step-00078000/"
 # elif args.model_format == "gguf":
-#     CKPT_DIR = "/workspace/metagenomic/model_ckpts/converted_gguf/step-00078000/"
+#     CKPT_DIR = "/workspace/MGFM/model_ckpts/converted_gguf/step-00078000/"
 
-DATASET_DIR = "/workspace/metagenomic/data/sanity_check/cleaned_tokens_2000000000.txt"
-TOKENIZER_CKPT_DIR = "/workspace/metagenomic/model_ckpts/step-00078000/"
+DATASET_DIR = "/workspace/MGFM/data/sanity_check/cleaned_tokens_2000000000.txt"
+TOKENIZER_CKPT_DIR = "/workspace/MGFM/model_ckpts/step-00078000/"
 SINGLE_GPU = 1
 
 N = 1000  # Dataset Size
