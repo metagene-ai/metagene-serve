@@ -1,0 +1,6 @@
+[submodule "MGFM-training"]
+	path = MGFM-training
+	url = https://github.com/MetagenomicFM/MetagenomicFM.git
+[submodule "vast-utilities"]
+	path = vast-utilities
+	url = https://github.com/shangshang-wang/vast-utilities.git
