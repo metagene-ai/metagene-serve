@@ -1,8 +1,5 @@
 #!/bin/bash
-
-pip install wandb
-
-model_path="/workspace/MGFM/model_ckpts/step-00078000"
+model_path="/workspace/MGFM/model_ckpts/converted_safetensors/step-00078000"
 data_path="/workspace/MGFM/data/fine-tune/GUE"
 output_dir="/workspace/MGFM/model_ckpts/fine-tune/step-00078000"
 

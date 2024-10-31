@@ -10,7 +10,7 @@ import torch
 from torch.utils.data import Dataset
 from sklearn.metrics import accuracy_score, recall_score, f1_score, matthews_corrcoef, precision_score
 
-import wandb
+# import wandb
 
 
 import os
@@ -96,7 +96,8 @@ class TrainingArguments(HfTrainingArguments):
     overwrite_output_dir: bool = field(default=True)
     logging_steps: int = field(default=100000)
     log_level: Optional[str] = field(default="info")
-    report_to: str = field(default="wandb")
+    # report_to: str = field(default="wandb")
+    report_to: str = field(default=None)
     
     fp16: bool = field(default=False)
     find_unused_parameters: bool = field(default=False)
@@ -177,9 +178,9 @@ def main():
     parser = transformers.HfArgumentParser((ModelArguments, DataArguments, TrainingArguments))
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
 
-    # Initialize wandb
-    if training_args.report_to == "wandb":
-        wandb.init(project="MGFM-GUE-benchmark", name=training_args.run_name)
+    # # Initialize wandb
+    # if training_args.report_to == "wandb":
+    #     wandb.init(project="MGFM-GUE-benchmark", name=training_args.run_name)
 
     # load the tokenizer
     print("Loading the tokenizer ...")
@@ -244,10 +245,10 @@ def main():
         with open(os.path.join(results_path, "eval_results.json"), "w") as f:
             json.dump(results, f)
         
-        if training_args.report_to == "wandb":
-            # Log final results to wandb
-            wandb.log(results)
-            wandb.finish()
+        # if training_args.report_to == "wandb":
+        #     # Log final results to wandb
+        #     wandb.log(results)
+        #     wandb.finish()
 
 
 if __name__ == "__main__":
