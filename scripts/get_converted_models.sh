@@ -13,7 +13,7 @@ mkdir -p $ST_MODEL_DIR
 # mkdir -p $GGUF_MODEL_DIR
 
 # Get the tokenizer.model from the github repo
-cp ./submodules/MGFM-training/train/minbpe/tokenizer/large-mgfm-1024.model $ORIGINAL_MODEL_DIR/tokenizer.model
+cp ./submodules/MGFM-train/train/minbpe/tokenizer/large-mgfm-1024.model $ORIGINAL_MODEL_DIR/tokenizer.model
 
 # Convert litgpt format to pth format
 litgpt convert_from_litgpt $ORIGINAL_MODEL_DIR $PTH_MODEL_DIR
