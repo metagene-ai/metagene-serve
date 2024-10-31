@@ -14,6 +14,7 @@ model_path = args.pth_model_dir + "/" + "model.pth"
 config_path = args.pth_model_dir + "/" + "config.json"
 
 # Load the pth model
+print("loading pth model ...")
 config = AutoConfig.from_pretrained(config_path)
 model = AutoModelForCausalLM.from_config(config)
 model.load_state_dict(torch.load(model_path))

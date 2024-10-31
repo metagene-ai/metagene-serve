@@ -15,14 +15,16 @@ mkdir -p $BIN_MODEL_DIR
 # mkdir -p $GGUF_MODEL_DIR
 
 # # Get the tokenizer.model from the github repo
-# cp ./submodules/MGFM-train/train/minbpe/tokenizer/large-mgfm-1024.model $ORIGINAL_MODEL_DIR/tokenizer.model
+cp ./submodules/MGFM-train/train/minbpe/tokenizer/large-mgfm-1024.model $ORIGINAL_MODEL_DIR/tokenizer.model
 
 # Convert litgpt format to pth format
+echo "Converting litgpt model to pth ..."
 litgpt convert_from_litgpt $ORIGINAL_MODEL_DIR $PTH_MODEL_DIR
 
 cp $ORIGINAL_MODEL_DIR/tokenizer.model $PTH_MODEL_DIR/tokenizer.model
 cp $ORIGINAL_MODEL_DIR/config.json $PTH_MODEL_DIR/config.json
 cp $ORIGINAL_MODEL_DIR/tokenizer.json $PTH_MODEL_DIR/tokenizer.json
+echo "pth model converted"
 
 # Convert pth format to safetensors bin format
 python ./src/convert/convert_pth_to_st_bin.py \

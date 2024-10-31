@@ -7,11 +7,11 @@ pip install torch
 pip install scikit-learn
 pip install accelerate
 
-# Enable flash attention
-gh repo clone triton-lang/triton
-cd triton/python
-pip install cmake
-pip install -e .
+## Enable flash attention
+#gh repo clone triton-lang/triton
+#cd triton/python
+#pip install cmake
+#pip install -e .
 
 # Get the gdown path for fine-tune data
 get_input() {

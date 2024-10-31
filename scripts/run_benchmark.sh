@@ -16,7 +16,7 @@ for data in H3 H3K14ac H3K36me3 H3K4me1 H3K4me2 H3K4me3 H3K79me3 H3K9ac H4 H4ac
 do
     if [ "$gpu_count" -gt 1 ]; then
         echo "Fine-tuning the model on GUE/EMP/$data with $gpu_count GPUs"
-        torchrun --nproc_per_node $gpu_count ./src/finetune/finetune_for_eval.py \
+        torchrun --nproc_per_node $gpu_count ./src/finetune/finetune_full.py \
             --model_name_or_path $model_path \
             --output_dir $output_dir \
             --data_path  $data_path/EMP/$data \
@@ -32,7 +32,7 @@ do
             --warmup_steps 50
     else
         echo "Fine-tuning the model on GUE/EMP/$data with a single GPU"
-        python ./src/finetune/finetune_for_eval.py \
+        python ./src/finetune/finetune_full.py \
             --model_name_or_path $model_path \
             --output_dir $output_dir \
             --data_path  $data_path/EMP/$data \
