@@ -30,6 +30,6 @@ For the following scripts, please run them under the main repo folder rather the
 
 ```shell
 ./scripts/get_converted_models.sh
-./scripts/get_finetune_data.sh
+./scripts/get_finetune_setup.sh
 ./scripts/run_benchmark.sh
 ```
