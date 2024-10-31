@@ -3,7 +3,7 @@ from typing import Any, Optional, Dict, Sequence, Tuple, List, Union
 from dataclasses import dataclass, field
 
 import transformers
-from transformers import AutoModelForCausalLM, PreTrainedTokenizerFast
+from transformers import AutoConfig, AutoModelForSequenceClassification, PreTrainedTokenizerFast
 from transformers import TrainingArguments as HfTrainingArguments
 
 import torch
@@ -12,6 +12,9 @@ from sklearn.metrics import accuracy_score, recall_score, f1_score, matthews_cor
 
 import wandb
 
+
+import os
+os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
 
 
 # https://github.com/MAGICS-LAB/DNABERT_2/blob/main/finetune/train.py
@@ -118,28 +121,28 @@ class DataCollatorForSupervisedDataset(object):
         )
 
 
-# @dataclass
-# class DataCollatorForSupervisedDatasetFast:
-#     tokenizer: transformers.PreTrainedTokenizerFast
+@dataclass
+class DataCollatorForSupervisedDatasetFast:
+    tokenizer: transformers.PreTrainedTokenizerFast
 
-#     def __call__(self, instances: Sequence[Dict]) -> Dict[str, torch.Tensor]:
-#         input_ids, labels = tuple([instance[key] for instance in instances] for key in ("input_ids", "labels"))
+    def __call__(self, instances: Sequence[Dict]) -> Dict[str, torch.Tensor]:
+        input_ids, labels = tuple([instance[key] for instance in instances] for key in ("input_ids", "labels"))
         
-#         # Convert input_ids to a list of lists if they are not already
-#         if isinstance(input_ids[0], torch.Tensor):
-#             input_ids = [ids.tolist() for ids in input_ids]
+        # Convert input_ids to a list of lists if they are not already
+        if isinstance(input_ids[0], torch.Tensor):
+            input_ids = [ids.tolist() for ids in input_ids]
         
-#         # Use the pad method of PreTrainedTokenizerFast
-#         batch = self.tokenizer.pad(
-#             {"input_ids": input_ids},
-#             padding=True,
-#             return_tensors="pt"
-#         )
+        # Use the pad method of PreTrainedTokenizerFast
+        batch = self.tokenizer.pad(
+            {"input_ids": input_ids},
+            padding=True,
+            return_tensors="pt"
+        )
         
-#         # Convert labels to tensor
-#         batch["labels"] = torch.tensor(labels, dtype=torch.long)
+        # Convert labels to tensor
+        batch["labels"] = torch.tensor(labels, dtype=torch.long)
         
-#         return batch
+        return batch
 
 
 # from: https://discuss.huggingface.co/t/cuda-out-of-memory-when-using-trainer-with-compute-metrics/2941/13
@@ -180,40 +183,39 @@ def main():
 
     # load the tokenizer
     print("Loading the tokenizer ...")
-    tokenizer = transformers.AutoTokenizer.from_pretrained(
-        model_args.model_name_or_path,
-        model_max_length=training_args.model_max_length,
-        padding_side="right",
-        use_fast=True)
-    # tokenizer = PreTrainedTokenizerFast.from_pretrained(
-    #     model_args.model_name_or_path, 
-    #     model_max_length=training_args.model_max_length)
-    # tokenizer.pad_token = "[PAD]"
-    # tokenizer.pad_token_id = 0
+    tokenizer = PreTrainedTokenizerFast.from_pretrained(
+        model_args.model_name_or_path, 
+        model_max_length=training_args.model_max_length)
+    tokenizer.pad_token = "[PAD]"
+    tokenizer.pad_token_id = 0
     print("Tokenizer loaded")
+
+    # define the data collator and datasets
+    # data_collator = DataCollatorForSupervisedDataset(tokenizer=tokenizer)
+    data_collator = DataCollatorForSupervisedDatasetFast(tokenizer=tokenizer)
+    train_dataset = SupervisedDataset(tokenizer=tokenizer, data_path=os.path.join(data_args.data_path, "train.csv"))
+    val_dataset = SupervisedDataset(tokenizer=tokenizer, data_path=os.path.join(data_args.data_path, "dev.csv"))
+    test_dataset = SupervisedDataset(tokenizer=tokenizer, data_path=os.path.join(data_args.data_path, "test.csv"))
 
     # load the model
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     print("Loading the model ...")
     # model = AutoModelForCausalLM.from_pretrained(model_args.model_name_or_path, use_safetensors=True)
-    model = transformers.AutoModelForSequenceClassification.from_pretrained(
+    config = AutoConfig.from_pretrained(model_args.model_name_or_path)
+    config.num_labels = train_dataset.num_labels
+    model = AutoModelForSequenceClassification.from_pretrained(
         model_args.model_name_or_path,
-        num_labels=train_dataset.num_labels,
-        use_safetensors=True)
+        config=config,
+        use_safetensors=True
+    )
     model = model.to(device)
     print("Model loaded")
-
-    # define the data collator and datasets
-    data_collator = DataCollatorForSupervisedDataset(tokenizer=tokenizer)
-    train_dataset = SupervisedDataset(tokenizer=tokenizer, data_path=os.path.join(data_args.data_path, "train.csv"))
-    val_dataset = SupervisedDataset(tokenizer=tokenizer, data_path=os.path.join(data_args.data_path, "dev.csv"))
-    test_dataset = SupervisedDataset(tokenizer=tokenizer, data_path=os.path.join(data_args.data_path, "test.csv"))
     
     # define the trainer
     trainer = transformers.Trainer(
         model=model,
-        tokenizer=tokenizer,
+        processing_class=tokenizer,
         args=training_args,
         preprocess_logits_for_metrics=preprocess_logits_for_metrics,
         compute_metrics=compute_metrics,
