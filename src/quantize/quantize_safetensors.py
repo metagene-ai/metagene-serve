@@ -45,7 +45,7 @@ if args.quant_type == "gptq":
 
     # Clip off the first N samples for sanity check
     random.shuffle(dataset)
-    quant_dataset = dataset[N:2*N]
+    quant_dataset = dataset[N:N+10]
 
     start_time = time.time()
     print(f"START: quantizing the model using {args.quant_type}")
@@ -55,7 +55,6 @@ if args.quant_type == "gptq":
         dataset=quant_dataset,
         tokenizer=tokenizer,
         block_name_to_quantize="model.layers",
-        batch_size=1
     )
     # GPTQ quantized model
     gptq_quantized_model = AutoModelForCausalLM.from_pretrained(
