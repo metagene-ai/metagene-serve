@@ -17,16 +17,18 @@ cd ./MGFM-serving
 find ./ -type f -name "*.sh" -exec chmod +x {} +
 ```
 
+For the following scripts, please run them under the main repo folder rather their corresponding subfolders.
 ```shell
-./vast-utilities/basic_setup/set_zsh_conda.sh
+./submodules/vast-utilities/basic_setup/set_zsh_conda.sh
 ```
 
 ```shell
-./vast-utilities/dev_setup/set_aws_wasabi.sh
-./vast-utilities/dev_setup/get_model_ckpt.sh
+./submodules/vast-utilities/dev_setup/set_aws_wasabi.sh
+./submodules/vast-utilities/dev_setup/get_model_ckpt.sh
 ```
 
 ```shell
 ./scripts/get_converted_models.sh
-./scripts/get_quantized_models.sh
+./scripts/get_finetune_data.sh
+./scripts/run_benchmark.sh
 ```
