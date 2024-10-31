@@ -6,14 +6,16 @@ pip install 'litgpt[all]'
 ORIGINAL_MODEL_DIR=/workspace/MGFM/model_ckpts/step-00078000
 PTH_MODEL_DIR=/workspace/MGFM/model_ckpts/converted_pth/step-00078000
 ST_MODEL_DIR=/workspace/MGFM/model_ckpts/converted_safetensors/step-00078000
+BIN_MODEL_DIR=/workspace/MGFM/model_ckpts/converted_bin/step-00078000
 # GGUF_MODEL_DIR=/workspace/MGFM/model_ckpts/converted_gguf/step-00078000
 
 mkdir -p $PTH_MODEL_DIR
 mkdir -p $ST_MODEL_DIR
+mkdir -p $BIN_MODEL_DIR
 # mkdir -p $GGUF_MODEL_DIR
 
-# Get the tokenizer.model from the github repo
-cp ./submodules/MGFM-train/train/minbpe/tokenizer/large-mgfm-1024.model $ORIGINAL_MODEL_DIR/tokenizer.model
+# # Get the tokenizer.model from the github repo
+# cp ./submodules/MGFM-train/train/minbpe/tokenizer/large-mgfm-1024.model $ORIGINAL_MODEL_DIR/tokenizer.model
 
 # Convert litgpt format to pth format
 litgpt convert_from_litgpt $ORIGINAL_MODEL_DIR $PTH_MODEL_DIR
@@ -22,14 +24,19 @@ cp $ORIGINAL_MODEL_DIR/tokenizer.model $PTH_MODEL_DIR/tokenizer.model
 cp $ORIGINAL_MODEL_DIR/config.json $PTH_MODEL_DIR/config.json
 cp $ORIGINAL_MODEL_DIR/tokenizer.json $PTH_MODEL_DIR/tokenizer.json
 
-# Convert pth format to safetensors format
-python ./src/convert/convert_pth_to_safetensors.py \
+# Convert pth format to safetensors bin format
+python ./src/convert/convert_pth_to_st_bin.py \
     --pth_model_dir=$PTH_MODEL_DIR \
-    --st_model_dir=$ST_MODEL_DIR
+    --st_model_dir=$ST_MODEL_DIR \
+    --bin_model_dir=$BIN_MODEL_DIR
 
 cp $ORIGINAL_MODEL_DIR/tokenizer.model $ST_MODEL_DIR/tokenizer.model
 cp $ORIGINAL_MODEL_DIR/config.json $ST_MODEL_DIR/config.json
 cp $ORIGINAL_MODEL_DIR/tokenizer.json $ST_MODEL_DIR/tokenizer.json
+
+cp $ORIGINAL_MODEL_DIR/tokenizer.model $BIN_MODEL_DIR/tokenizer.model
+cp $ORIGINAL_MODEL_DIR/config.json $BIN_MODEL_DIR/config.json
+cp $ORIGINAL_MODEL_DIR/tokenizer.json $BIN_MODEL_DIR/tokenizer.json
 
 # # Convert safetensors format to gguf format
 # # https://www.substratus.ai/blog/converting-hf-model-gguf-model/

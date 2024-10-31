@@ -2,6 +2,10 @@
 
 pip install gdown
 pip install wandb
+pip install transformers
+pip install torch
+pip install scikit-learn
+pip install accelerate
 
 # Enable flash attention
 gh repo clone triton-lang/triton

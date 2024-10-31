@@ -6,6 +6,7 @@ import argparse
 parser = argparse.ArgumentParser(description="Convert model format")
 parser.add_argument("--pth_model_dir", type=str, required=True, help="Directory containing model.pth and config.json")
 parser.add_argument("--st_model_dir", type=str, required=True, help="Directory to save safetensors model")
+parser.add_argument("--bin_model_dir", type=str, required=True, help="Directory to save bin model")
 args = parser.parse_args()
 
 # Set the paths to your files
@@ -21,3 +22,7 @@ print("pth model loaded")
 # Save the model in safetensors format
 model.save_pretrained(args.st_model_dir)
 print("safetensors model saved")
+
+# Save the model in bin format
+model.save_pretrained(args.bin_model_dir, safe_serialization=False)
+print("bin model saved")
