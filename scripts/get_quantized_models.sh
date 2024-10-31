@@ -16,11 +16,11 @@ mkdir -p $GPTQ_ST_CKPT_DIR
 mkdir -p $NF4_ST_CKPT_DIR
 
 # Quantize safetensors using GPTQ
-python ./quantization/quantize_safetensors.py --quant_type="gptq"
+python MGFM-serving/src/quantize/quantize_safetensors.py --quant_type="gptq"
 cp $ORIGINAL_MODEL_DIR/tokenizer.model $GPTQ_ST_CKPT_DIR/tokenizer.model
 cp $ORIGINAL_MODEL_DIR/tokenizer.json $GPTQ_ST_CKPT_DIR/tokenizer.json
 
 # Quantize safetensors using NF4
-python ./quantization/quantize_safetensors.py --quant_type="nf4"
+python MGFM-serving/src/quantize/quantize_safetensors.py --quant_type="nf4"
 cp $ORIGINAL_MODEL_DIR/tokenizer.model $NF4_ST_CKPT_DIR/tokenizer.model
 cp $ORIGINAL_MODEL_DIR/tokenizer.json $NF4_ST_CKPT_DIR/tokenizer.json

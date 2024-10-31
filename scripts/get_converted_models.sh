@@ -13,7 +13,7 @@ mkdir -p $ST_MODEL_DIR
 # mkdir -p $GGUF_MODEL_DIR
 
 # Get the tokenizer.model from the github repo
-cp ./MGFM-training/train/minbpe/tokenizer/large-mgfm-1024.model $ORIGINAL_MODEL_DIR/tokenizer.model
+cp MGFM-serving/submodules/MGFM-training/train/minbpe/tokenizer/large-mgfm-1024.model $ORIGINAL_MODEL_DIR/tokenizer.model
 
 # Convert litgpt format to pth format
 litgpt convert_from_litgpt $ORIGINAL_MODEL_DIR $PTH_MODEL_DIR
@@ -23,7 +23,7 @@ cp $ORIGINAL_MODEL_DIR/config.json $PTH_MODEL_DIR/config.json
 cp $ORIGINAL_MODEL_DIR/tokenizer.json $PTH_MODEL_DIR/tokenizer.json
 
 # Convert pth format to safetensors format
-python ./conversion/convert_pth_to_safetensors.py \
+python MGFM-serving/src/convert/convert_pth_to_safetensors.py \
     --pth_model_dir=$PTH_MODEL_DIR \
     --st_model_dir=$ST_MODEL_DIR
 
