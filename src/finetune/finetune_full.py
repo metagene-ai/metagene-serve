@@ -16,6 +16,8 @@ from sklearn.metrics import accuracy_score, recall_score, f1_score, matthews_cor
 import os
 os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 # https://github.com/MAGICS-LAB/DNABERT_2/blob/main/finetune/train.py
 class SupervisedDataset(Dataset):
@@ -25,16 +27,16 @@ class SupervisedDataset(Dataset):
 
         super(SupervisedDataset, self).__init__()
 
-        # load data from the disk
+        # load the data
         with open(data_path, "r") as f:
             data = list(csv.reader(f))[1:]
         if len(data[0]) == 2:
-            # data is in the format of [text, label]
+            # data is in the format of [sequence, label]
             logging.warning("Perform single sequence classification...")
             texts = [d[0] for d in data]
             labels = [int(d[1]) for d in data]
         elif len(data[0]) == 3:
-            # data is in the format of [text1, text2, label]
+            # data is in the format of [sequence1, sequence2, label]
             logging.warning("Perform sequence-pair classification...")
             texts = [[d[0], d[1]] for d in data]
             labels = [int(d[2]) for d in data]
@@ -44,10 +46,10 @@ class SupervisedDataset(Dataset):
         output = tokenizer(
             texts,
             return_tensors="pt",
-            padding="longest",
+            padding=True,
             max_length=tokenizer.model_max_length,
             truncation=True,
-        )
+        ).to(device)
 
         self.input_ids = output["input_ids"]
         self.attention_mask = output["attention_mask"]
@@ -106,44 +108,30 @@ class TrainingArguments(HfTrainingArguments):
     
 
 @dataclass
-class DataCollatorForSupervisedDataset(object):
-    tokenizer: transformers.PreTrainedTokenizer
-
-    def __call__(self, instances: Sequence[Dict]) -> Dict[str, torch.Tensor]:
-        input_ids, labels = tuple([instance[key] for instance in instances] for key in ("input_ids", "labels"))
-        input_ids = torch.nn.utils.rnn.pad_sequence(
-            input_ids, batch_first=True, padding_value=self.tokenizer.pad_token_id
-        )
-        labels = torch.Tensor(labels).long()
-        return dict(
-            input_ids=input_ids,
-            labels=labels,
-            attention_mask=input_ids.ne(self.tokenizer.pad_token_id),
-        )
-
-
-@dataclass
 class DataCollatorForSupervisedDatasetFast:
     tokenizer: transformers.PreTrainedTokenizerFast
 
     def __call__(self, instances: Sequence[Dict]) -> Dict[str, torch.Tensor]:
         input_ids, labels = tuple([instance[key] for instance in instances] for key in ("input_ids", "labels"))
-        
-        # Convert input_ids to a list of lists if they are not already
+
         if isinstance(input_ids[0], torch.Tensor):
             input_ids = [ids.tolist() for ids in input_ids]
-        
+
         # Use the pad method of PreTrainedTokenizerFast
-        batch = self.tokenizer.pad(
+        padded_inputs = self.tokenizer.pad(
             {"input_ids": input_ids},
             padding=True,
             return_tensors="pt"
         )
-        
-        # Convert labels to tensor
-        batch["labels"] = torch.tensor(labels, dtype=torch.long)
-        
-        return batch
+        input_ids = padded_inputs['input_ids']
+        labels = torch.tensor(labels, dtype=torch.long)
+        attention_mask = input_ids.ne(self.tokenizer.pad_token_id)
+
+        return dict(
+            input_ids=input_ids,
+            labels=labels,
+            attention_mask=attention_mask,
+        )
 
 
 # from: https://discuss.huggingface.co/t/cuda-out-of-memory-when-using-trainer-with-compute-metrics/2941/13
@@ -163,13 +151,13 @@ def compute_metrics(eval_pred):
     # Exclude padding tokens (-100)
     non_padding_mask = (labels != -100)  
     non_padding_predictions = predictions[non_padding_mask]
-    vnon_padding_labels = labels[non_padding_mask]
+    non_padding_labels = labels[non_padding_mask]
     return {
-        "accuracy": accuracy_score(vnon_padding_labels, non_padding_predictions),
-        "f1": f1_score(vnon_padding_labels, non_padding_predictions, average="macro", zero_division=0),
-        "matthews_correlation": matthews_corrcoef(vnon_padding_labels, non_padding_predictions),
-        "precision": precision_score(vnon_padding_labels, non_padding_predictions, average="macro", zero_division=0),
-        "recall": recall_score(vnon_padding_labels, non_padding_predictions, average="macro", zero_division=0),
+        "accuracy": accuracy_score(non_padding_labels, non_padding_predictions),
+        "f1": f1_score(non_padding_labels, non_padding_predictions, average="macro", zero_division=0),
+        "matthews_correlation": matthews_corrcoef(non_padding_labels, non_padding_predictions),
+        "precision": precision_score(non_padding_labels, non_padding_predictions, average="macro", zero_division=0),
+        "recall": recall_score(non_padding_labels, non_padding_predictions, average="macro", zero_division=0),
     }
 
 
@@ -184,24 +172,20 @@ def main():
 
     # load the tokenizer
     print("Loading the tokenizer ...")
-    tokenizer = PreTrainedTokenizerFast.from_pretrained(
-        model_args.model_name_or_path, 
-        model_max_length=training_args.model_max_length)
+    tokenizer = PreTrainedTokenizerFast.from_pretrained(model_args.model_name_or_path)
     tokenizer.pad_token = "[PAD]"
     tokenizer.pad_token_id = 0
     print("Tokenizer loaded")
 
     # define the data collator and datasets
-    # data_collator = DataCollatorForSupervisedDataset(tokenizer=tokenizer)
     data_collator = DataCollatorForSupervisedDatasetFast(tokenizer=tokenizer)
     train_dataset = SupervisedDataset(tokenizer=tokenizer, data_path=os.path.join(data_args.data_path, "train.csv"))
-    val_dataset = SupervisedDataset(tokenizer=tokenizer, data_path=os.path.join(data_args.data_path, "dev.csv"))
+    eval_dataset = SupervisedDataset(tokenizer=tokenizer, data_path=os.path.join(data_args.data_path, "dev.csv"))
     test_dataset = SupervisedDataset(tokenizer=tokenizer, data_path=os.path.join(data_args.data_path, "test.csv"))
 
     # load the model
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
     print("Loading the model ...")
+
     # model = AutoModelForCausalLM.from_pretrained(model_args.model_name_or_path, use_safetensors=True)
     config = AutoConfig.from_pretrained(model_args.model_name_or_path)
     config.num_labels = train_dataset.num_labels
@@ -216,12 +200,12 @@ def main():
     # define the trainer
     trainer = transformers.Trainer(
         model=model,
-        processing_class=tokenizer,
+        tokenizer=tokenizer,
         args=training_args,
         preprocess_logits_for_metrics=preprocess_logits_for_metrics,
         compute_metrics=compute_metrics,
         train_dataset=train_dataset,
-        eval_dataset=val_dataset,
+        eval_dataset=eval_dataset,
         data_collator=data_collator)
     
     # fine-tune the model and save results
@@ -235,7 +219,6 @@ def main():
             cpu_state_dict = {key: value.cpu() for key, value in state_dict.items()}
             del state_dict
             trainer._save(output_path=training_args.output_path, state_dict=cpu_state_dict)
-
 
     # get the evaluation results
     if training_args.eval_and_save_results:
