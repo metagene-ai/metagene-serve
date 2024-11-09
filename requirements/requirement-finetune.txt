@@ -1,0 +1,5 @@
+optimum
+accelerate
+peft
+bitsandbytes
+optuna

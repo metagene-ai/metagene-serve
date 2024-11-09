@@ -4,32 +4,29 @@ Everything related to MGFM usage after training/tuning and inference-time optimi
 
 ## Get Started
 
-The following steps show an example workflow starting on a new vast instance.
+The following steps show an example workflow starting on a new env.
 ```shell
 sudo apt install gh
 gh auth login
-```
 
-```shell
-mkdir -p /workspace/MGFM
-cd /workspace/MGFM
+mkdir -p ~/workspace/MGFM && cd ~/workspace/MGFM
 gh repo clone MetagenomicFM/MGFM-serving -- --recurse-submodules
 cd MGFM-serving
+```
+
+```shell
+pip install -r ./requirements/requirement-basic.txt
+pip install -r ./requirements/requirement-finetune.txt
+```
+
+```shell
 find ./ -type f -name "*.sh" -exec chmod +x {} +
+./submodules/server-utilities/basic_setup/set_conda.sh
+./submodules/server-utilities/dev_setup/set_aws_wasabi.sh
 ```
 
-For the following scripts, please run them under the main repo folder rather their corresponding subfolders.
+For fine-tuning and evaluation tasks, please run the following
 ```shell
-./submodules/vast-utilities/basic_setup/set_zsh_conda.sh
-```
-
-```shell
-./submodules/vast-utilities/dev_setup/set_aws_wasabi.sh
-./submodules/vast-utilities/dev_setup/get_model_ckpt.sh
-```
-
-```shell
-./scripts/get_converted_models.sh
 ./scripts/get_finetune_setup.sh
-./scripts/run_benchmark.sh
+./run/run_benchmark_eval.sh
 ```
