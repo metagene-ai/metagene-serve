@@ -8,11 +8,11 @@ from transformers import \
     GPTQConfig, \
     BitsAndBytesConfig
 
-DATASET_DIR = "/workspace/MGFM/data/sanity_check/cleaned_tokens_2000000000.txt"
-TOKENIZER_CKPT_DIR = "/workspace/MGFM/model_ckpts/step-00078000/"
-ST_CKPT_DIR = "/workspace/MGFM/model_ckpts/converted_safetensors/step-00078000/"
-GPTQ_ST_CKPT_DIR = "/workspace/MGFM/model_ckpts/converted_safetensors/gptq_safetensors/step-00078000"
-NF4_ST_CKPT_DIR = "/workspace/MGFM/model_ckpts/converted_safetensors/nf4_safetensors/step-00078000"
+DATASET_DIR = "../data/sanity_check/cleaned_tokens_2000000000.txt"
+TOKENIZER_CKPT_DIR = "../model_ckpts/litgpt/step-00078000/"
+ST_CKPT_DIR = "../model_ckpts/safetensors/step-00078000/"
+GPTQ_ST_CKPT_DIR = "../model_ckpts/safetensors/gptq/step-00078000"
+NF4_ST_CKPT_DIR = "../model_ckpts/safetensors/nf4/step-00078000"
 
 parser = argparse.ArgumentParser(description="Quantization type")
 parser.add_argument("--quant_type", type=str, required=True, help="Quantization type")
