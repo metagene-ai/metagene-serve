@@ -1,3 +1,6 @@
 [submodule "submodules/MGFM-train"]
 	path = submodules/MGFM-train
 	url = https://github.com/MetagenomicFM/MetagenomicFM.git
+[submodule "submodules/server-utilities"]
+	path = submodules/server-utilities
+	url = https://github.com/shangshang-wang/server-utilities.git
