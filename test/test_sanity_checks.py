@@ -17,20 +17,20 @@ args = parser.parse_args()
 
 # TO USE THIS SCRIPT, PLEASE CHANGE THE FOLLOWING DIRECTORIES
 if args.model_format == "litgpt":
-    CKPT_DIR = "/workspace/MGFM/model_ckpts/step-00078000/"
+    CKPT_DIR = "../model_ckpts/litgpt/step-00078000/"
 elif args.model_format == "pth":
-    CKPT_DIR = "/workspace/MGFM/model_ckpts/converted_pth/step-00078000/"
+    CKPT_DIR = "../model_ckpts/pth/step-00078000/"
 elif args.model_format == "st":
-    CKPT_DIR = "/workspace/MGFM/model_ckpts/converted_safetensors/step-00078000/"
+    CKPT_DIR = "../model_ckpts/safetensors/step-00078000/"
 elif args.model_format == "st_gptq":
-    CKPT_DIR = "/workspace/MGFM/model_ckpts/converted_safetensors/gptq_safetensors/step-00078000/"
+    CKPT_DIR = "../model_ckpts/safetensors/gptq/step-00078000/"
 elif args.model_format == "st_nf4":
-    CKPT_DIR = "/workspace/MGFM/model_ckpts/converted_safetensors/nf4_safetensors/step-00078000/"
+    CKPT_DIR = "../model_ckpts/safetensors/nf4/step-00078000/"
 # elif args.model_format == "gguf":
-#     CKPT_DIR = "/workspace/MGFM/model_ckpts/converted_gguf/step-00078000/"
+#     CKPT_DIR = "../model_ckpts/gguf/step-00078000/"
 
-DATASET_DIR = "/workspace/MGFM/data/sanity_check/cleaned_tokens_2000000000.txt"
-TOKENIZER_CKPT_DIR = "/workspace/MGFM/model_ckpts/step-00078000/"
+DATASET_DIR = "../data/sanity_check/cleaned_tokens_2000000000.txt"
+TOKENIZER_CKPT_DIR = "../model_ckpts/litgpt/step-00078000/"
 
 N = 1000 # Dataset Size
 B = int(args.batch_size) # Batch Size
