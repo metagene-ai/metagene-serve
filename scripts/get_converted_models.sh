@@ -3,11 +3,11 @@
 # Install litgpt package for sanity check and conversion
 pip install 'litgpt[all]'
 
-ORIGINAL_MODEL_DIR=/workspace/MGFM/model_ckpts/step-00078000
-PTH_MODEL_DIR=/workspace/MGFM/model_ckpts/converted_pth/step-00078000
-ST_MODEL_DIR=/workspace/MGFM/model_ckpts/converted_safetensors/step-00078000
-BIN_MODEL_DIR=/workspace/MGFM/model_ckpts/converted_bin/step-00078000
-# GGUF_MODEL_DIR=/workspace/MGFM/model_ckpts/converted_gguf/step-00078000
+ORIGINAL_MODEL_DIR="../model_ckpts/litgpt/step-00078000"
+PTH_MODEL_DIR="../model_ckpts/pth/step-00078000"
+ST_MODEL_DIR="../model_ckpts/safetensors/step-00078000"
+BIN_MODEL_DIR="../model_ckpts/bin/step-00078000"
+# GGUF_MODEL_DIR="../model_ckpts/gguf/step-00078000"
 
 mkdir -p $PTH_MODEL_DIR
 mkdir -p $ST_MODEL_DIR
@@ -31,6 +31,7 @@ python ./src/convert/convert_pth_to_st_bin.py \
     --pth_model_dir=$PTH_MODEL_DIR \
     --st_model_dir=$ST_MODEL_DIR \
     --bin_model_dir=$BIN_MODEL_DIR
+echo "safetensors and bin models converted"
 
 cp $ORIGINAL_MODEL_DIR/tokenizer.model $ST_MODEL_DIR/tokenizer.model
 cp $ORIGINAL_MODEL_DIR/config.json $ST_MODEL_DIR/config.json

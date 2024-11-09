@@ -1,14 +1,7 @@
 #!/bin/bash
 
-pip install gdown
+gdown_path="1hbq0BTS0zbVS8Y708NE4_O21TmRuIM8B"
+SANITY_CHECK_DATA_DIR="../data/sanity_check"
 
-# Get the gdown path for sanity check data
-get_input() {
-    read -p "$1: " value
-    echo $value
-}
-gdown_path=$(get_input "Enter your remote gdown path for dataset")
-
-mkdir -p /workspace/MGFM/data/sanity_check
-
-gdown $gdown_path -O /workspace/MGFM/data/sanity_check/
+mkdir -p $SANITY_CHECK_DATA_DIR
+gdown $gdown_path -O $SANITY_CHECK_DATA_DIR

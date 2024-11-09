@@ -1,29 +1,26 @@
 #!/bin/bash
 
-pip install gdown
-pip install wandb
-pip install transformers
-pip install torch
-pip install scikit-learn
-pip install accelerate
-
 ## Enable flash attention
 #gh repo clone triton-lang/triton
 #cd triton/python
 #pip install cmake
 #pip install -e .
 
-# Get the gdown path for fine-tune data
-get_input() {
-    read -p "$1: " value
-    echo $value
-}
-gdown_path=$(get_input "Enter your remote gdown path for finetune dataset")
+echo "Downloading HF model checkpoint from Wasabi ..."
 
-mkdir -p /workspace/MGFM/data/fine-tune
+# Get Wasabi path-to-model
+REMOTE_MODEL_DIR="s3://mgfm-02/model-weights/hf-ckpt-78k"
+LOCAL_MODEL_DIR="../model_ckpts/safetensors/step-00078000"
+mkdir -p $LOCAL_MODEL_DIR
 
-gdown $gdown_path -O /workspace/MGFM/data/fine-tune/
+aws s3 sync $REMOTE_MODEL_DIR $LOCAL_MODEL_DIR --endpoint-url=https://s3.us-west-1.wasabisys.com
 
-cd 
-unzip -q /workspace/MGFM/data/fine-tune/GUE.zip -d /workspace/MGFM/data/fine-tune/
-rm /workspace/MGFM/data/fine-tune/GUE.zip 
+echo "Wasabi checkpoint downloading procoesss completes."
+echo "The model checkpoint has been downloaded to ~/workspace/MGFM/model_ckpts/safetensors/step-00078000"
+
+GUE_PATH="1GRtbzTe3UXYF1oW27ASNhYX3SZ16D7N2"
+GUE_DIR="../data/fine-tune/"
+
+mkdir -p $GUE_DIR
+gdown $GUE_PATH -O $GUE_DIR
+unzip -q "$GUE_DIR/GUE.zip" -d $GUE_DIR && rm "$GUE_DIR/GUE.zip"
