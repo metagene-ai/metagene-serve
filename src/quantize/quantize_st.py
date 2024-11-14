@@ -8,8 +8,8 @@ from transformers import \
     GPTQConfig, \
     BitsAndBytesConfig
 
-DATASET_DIR = "../data/sanity_check/cleaned_tokens_2000000000.txt"
-TOKENIZER_CKPT_DIR = "../model_ckpts/litgpt/step-00078000/"
+DATASET_DIR = "../data/sanity_check/sanity_check23vi7387.part"
+TOKENIZER_CKPT_DIR = "../model_ckpts/safetensors/step-00078000/"
 ST_CKPT_DIR = "../model_ckpts/safetensors/step-00078000/"
 GPTQ_ST_CKPT_DIR = "../model_ckpts/safetensors/gptq/step-00078000"
 NF4_ST_CKPT_DIR = "../model_ckpts/safetensors/nf4/step-00078000"
