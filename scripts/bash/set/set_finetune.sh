@@ -1,10 +1,5 @@
 #!/bin/bash
 
-## Enable flash attention
-#gh repo clone triton-lang/triton
-#cd triton/python
-#pip install cmake
-#pip install -e .
 
 echo "Downloading HF model checkpoint from Wasabi ..."
 
@@ -18,9 +13,12 @@ aws s3 sync $REMOTE_MODEL_DIR $LOCAL_MODEL_DIR --endpoint-url=https://s3.us-west
 echo "Wasabi checkpoint downloading procoesss completes."
 echo "The model checkpoint has been downloaded to ~/workspace/MGFM/model_ckpts/safetensors/step-00078000"
 
+
+echo "Downloading data for fine-tuning ..."
 GUE_PATH="1GRtbzTe3UXYF1oW27ASNhYX3SZ16D7N2"
 GUE_DIR="../data/fine-tune/"
 
 mkdir -p $GUE_DIR
+pip install gdown
 gdown $GUE_PATH -O $GUE_DIR
 unzip -q "$GUE_DIR/GUE.zip" -d $GUE_DIR && rm "$GUE_DIR/GUE.zip"

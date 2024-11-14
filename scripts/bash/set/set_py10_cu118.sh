@@ -1,5 +1,21 @@
 #!/bin/bash
 
+
+pip install transformers
+pip install torch --extra-index-url https://download.pytorch.org/whl/cu118
+pip install torchvision --extra-index-url https://download.pytorch.org/whl/cu118
+pip install torchaudio
+pip install optimum
+pip install auto-gptq --extra-index-url https://huggingface.github.io/autogptq-index/whl/cu118/
+
+export OPENBLAS_NUM_THREADS=1
+export OMP_NUM_THREADS=1
+pip install accelerate
+pip install deepspeed
+pip install mpi4py
+
+
+########################## INSTALL BITSANDBYTES ##########################
 # install cmake without sudo
 cd ~
 wget https://github.com/Kitware/CMake/releases/download/v3.31.0/cmake-3.31.0.tar.gz
@@ -12,6 +28,7 @@ export PATH=$HOME/cmake/bin:$PATH
 source ~/.bashrc
 cmake --version
 
+
 # override pytorch cuda
 # https://huggingface.co/docs/bitsandbytes/main/en/installation#multi-backend
 cd ~
@@ -20,15 +37,14 @@ wget https://raw.githubusercontent.com/bitsandbytes-foundation/bitsandbytes/main
 bash install_cuda.sh 118 ~/local 1
 
 # Add the following to .bashrc
-# export BNB_CUDA_VERSION=118
-# export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home1/shangsha/local/cuda-11.8
+echo "export BNB_CUDA_VERSION=118" >> ~/.bashrc
+echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$HOME/local/cuda-11.8" >> ~/.bashrc
 
 
 # build bitsandbytes from source
 cd ~
 git clone https://github.com/bitsandbytes-foundation/bitsandbytes.git && cd bitsandbytes/
-# conda activate /project/neiswang_1391/envs/mgfm
 pip install -r requirements-dev.txt
 cmake -DCOMPUTE_BACKEND=cuda -S . && make
 pip install -e .
-
+########################## INSTALL BITSANDBYTES ##########################
