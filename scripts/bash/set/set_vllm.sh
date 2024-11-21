@@ -1,11 +1,12 @@
 #!/bin/bash
 
 
-pip install https://vllm-wheels.s3.us-west-2.amazonaws.com/nightly/vllm-1.0.0.dev-cp38-abi3-manylinux1_x86_64.whl
+# Must start a fresh new conda env! https://docs.vllm.ai/en/stable/getting_started/installation.html
+# Install vLLM with CUDA 11.8.
+export VLLM_VERSION=0.6.1.post1
+export PYTHON_VERSION=310
+pip install https://github.com/vllm-project/vllm/releases/download/v${VLLM_VERSION}/vllm-${VLLM_VERSION}+cu118-cp${PYTHON_VERSION}-cp${PYTHON_VERSION}-manylinux1_x86_64.whl --extra-index-url https://download.pytorch.org/whl/cu118
 
-# # run the following to get into the dev mode
-# cd ./src/finetune/vllm
-# python python_only_dev.py
+# Enable flash attention 2
+pip install vllm-flash-attn
 
-# # run the following before git push
-# python python_only_dev.py --quit-dev

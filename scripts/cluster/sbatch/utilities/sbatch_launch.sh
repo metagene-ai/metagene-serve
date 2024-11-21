@@ -23,12 +23,16 @@ cleanup() {
 }
 trap cleanup SIGINT
 
-
+# Store the job submission time
+start_time=$(date +%s)
 # Wait until the job is running
 while true; do
     job_status=$(squeue -j "$job_id" -h -o "%T")
     if [ "$job_status" == "RUNNING" ]; then
         echo "Job $job_id is now running."
+        end_time=$(date +%s)  # Get the current time when the job starts running
+        waiting_time=$((end_time - start_time))  # Calculate the waiting time
+        echo "The job waited for $waiting_time seconds before starting."
         sleep 5
         break
     elif [ -z "$job_status" ]; then

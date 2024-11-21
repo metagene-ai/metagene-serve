@@ -8,8 +8,14 @@
 # check the allocated GPUs
 echo "Allocated GPU(s):"
 nvidia-smi --query-gpu=name --format=csv,noheader
+echo "Allocated GPU(s) memory:"
+nvidia-smi --query-gpu=memory.total --format=csv,noheader
 
 # run the python script
 eval "$(conda shell.bash hook)"
-conda activate ${PROJECT_PREFIX}/envs/mgfm_serving
-python ./src/finetune/hyperparameter/hp_opt.py
+conda activate "${PROJECT_PREFIX}/envs/XXX"
+echo "Currently activated Conda environment: $(basename "$CONDA_PREFIX")"
+
+echo ""
+nvcc --version
+echo ""
