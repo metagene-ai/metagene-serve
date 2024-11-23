@@ -1,12 +1,8 @@
-import random
-import torch
 import argparse
+import random
 import time
-from transformers import \
-    PreTrainedTokenizerFast, \
-    AutoModelForCausalLM, \
-    GPTQConfig, \
-    BitsAndBytesConfig
+import torch
+from transformers import PreTrainedTokenizerFast, AutoModelForCausalLM, GPTQConfig, BitsAndBytesConfig
 
 
 if __name__ == "__main__":

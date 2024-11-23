@@ -1,6 +1,6 @@
-from transformers import AutoConfig, AutoModelForCausalLM
-import torch
 import argparse
+import torch
+from transformers import AutoConfig, AutoModelForCausalLM
 
 
 if __name__ == "__main__":
