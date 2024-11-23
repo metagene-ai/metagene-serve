@@ -1,13 +1,10 @@
 #!/bin/bash
 
 
-## Uncomment the following if it is not in a slurm-based env
-source ./scripts/bash/set/set_env_basic.sh
+## comment the following if in a slurm-based env
+#source ./scripts/bash/set/set_env_vars.sh
 
-if [ -z "$CKPT_STEP" ] || [ "$CKPT_STEP" == "none" ]; then
-    echo "Error: CKPT_STEP is not set or is set to 'none'. Exiting..."
-    exit 1
-fi
+export CKPT_STEP="step-00078000"
 
 echo "Star converting Litgpt model to HF model ..."
 
@@ -27,7 +24,7 @@ cp "${ORIGINAL_MODEL_DIR}/config.json" "${PTH_MODEL_DIR}/config.json"
 cp "${ORIGINAL_MODEL_DIR}/tokenizer.json" "${PTH_MODEL_DIR}/tokenizer.json"
 
 # Convert pth format to safetensors format
-python "${CODE_DIR}/src/conversion/convert_pth_to_st.py" \
+python "${CODE_DIR}/src/format/convert_pth_to_st.py" \
     --pth_model_dir="${PTH_MODEL_DIR}" \
     --st_model_dir="${ST_MODEL_DIR}"
 

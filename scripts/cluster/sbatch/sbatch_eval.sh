@@ -9,8 +9,16 @@ slurm_script=$(basename "$sbatch_script" | sed 's/^sbatch_//' | sed 's/\.sh$//')
 export SLURM_SCRIPT="${SLURM_PREFIX}/${slurm_script}"
 
 ########################## MAIN SCRIPT ##########################
-export SBATCH_JOB_NAME="${OUTPUT_DIR}/bash_xxx" # change bash_xxx to different bash scripts
+export SBATCH_JOB_NAME="${OUTPUT_DIR}/eval"
 export SBATCH_OUTPUT="${SBATCH_JOB_NAME}/%A_%a.out"
+
+# wandb project env variable
+export WANDB_API_KEY="3d8f78b6f45f87a40664beaf46a501b72faf205a" # make this private before git push
+export WANDB_DIR="${OUTPUT_DIR}/wandb"
+
+# LLM task-specific env variable
+export FINETUNE_OUTPUT_DIR="${OUTPUT_DIR}/finetune/output"
+export FINETUNE_LOG_DIR="${OUTPUT_DIR}/finetune/log"
 ########################## MAIN SCRIPT ##########################
 
 # launch the slurm script

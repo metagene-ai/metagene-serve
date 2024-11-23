@@ -1,18 +1,19 @@
 #!/bin/bash
 
 
-source ./scripts/bash/set/set_env_basic.sh
+## comment the following if in a slurm-based env
+source ./scripts/bash/set/set_env_vars.sh
 
 export CKPT_STEP="step-00078000"
 #export CKPT_STEP="step-00080000"
 
 echo "Downloading model checkpoint from Wasabi ..."
-REMOTE_MODEL_DIR=s3://mgfm-02/model-checkpoints/initial-checkpoints/step-00078000
+#REMOTE_MODEL_DIR=s3://mgfm-02/model-checkpoints/initial-checkpoints/step-00078000
 #REMOTE_MODEL_DIR="s3://mgfm-02/model-checkpoints/7b_part4_a/${CKPT_STEP}"
-#REMOTE_MODEL_DIR="s3://mgfm-02/model-weights/hf-ckpt-78k"
+REMOTE_MODEL_DIR="s3://mgfm-02/model-weights/hf-ckpt-78k"
 
-LOCAL_MODEL_DIR="${MODEL_CKPT_DIR}/litgpt/${CKPT_STEP}"
-#LOCAL_MODEL_DIR="${MODEL_CKPT_DIR}/safetensors/${CKPT_STEP}"
+#LOCAL_MODEL_DIR="${MODEL_CKPT_DIR}/litgpt/${CKPT_STEP}"
+LOCAL_MODEL_DIR="${MODEL_CKPT_DIR}/safetensors/${CKPT_STEP}"
 mkdir -p "${LOCAL_MODEL_DIR}"
 
 aws s3 sync "${REMOTE_MODEL_DIR}" "${LOCAL_MODEL_DIR}" --endpoint-url=https://s3.us-west-1.wasabisys.com

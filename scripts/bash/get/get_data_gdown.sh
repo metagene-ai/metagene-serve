@@ -1,7 +1,8 @@
 #!/bin/bash
 
 
-source ./scripts/bash/set/set_env_basic.sh
+## comment the following if in a slurm-based env
+source ./scripts/bash/set/set_env_vars.sh
 
 # for sanity check and quantization
 GDOWN_PATH="1hbq0BTS0zbVS8Y708NE4_O21TmRuIM8B" # cleaned_tokens_2000000000.txt

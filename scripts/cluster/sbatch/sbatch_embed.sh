@@ -9,7 +9,7 @@ slurm_script=$(basename "$sbatch_script" | sed 's/^sbatch_//' | sed 's/\.sh$//')
 export SLURM_SCRIPT="${SLURM_PREFIX}/${slurm_script}"
 
 ########################## MAIN SCRIPT ##########################
-export SBATCH_JOB_NAME="${OUTPUT_DIR}/bash_xxx" # change bash_xxx to different bash scripts
+export SBATCH_JOB_NAME="${OUTPUT_DIR}/embed" # change test_xxx to different test cases
 export SBATCH_OUTPUT="${SBATCH_JOB_NAME}/%A_%a.out"
 ########################## MAIN SCRIPT ##########################
 

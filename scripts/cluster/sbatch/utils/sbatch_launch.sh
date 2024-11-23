@@ -3,7 +3,7 @@
 
 ########################## MAIN SCRIPT ##########################
 base_name="${SLURM_SCRIPT%.*}"
-config_file="./scripts/cluster/slurm/utilities/slurm_config_${CLUSTER_NAME}.sh"
+config_file="./scripts/cluster/slurm/utils/${CLUSTER_NAME}_config.slurm"
 temp_file="${base_name}_temp.sh"
 
 sed -i "/^#!\/bin\/bash/r ${config_file}" $SLURM_SCRIPT
@@ -33,14 +33,14 @@ while true; do
         end_time=$(date +%s)  # Get the current time when the job starts running
         waiting_time=$((end_time - start_time))  # Calculate the waiting time
         echo "The job waited for $waiting_time seconds before starting."
-        sleep 5
+        sleep 2
         break
     elif [ -z "$job_status" ]; then
         echo "Job $job_id has finished or failed before reaching running state."
         exit 1
     else
-        echo "Job $job_id is still in $job_status state. Checking again in 10 seconds..."
-        sleep 10
+        echo "Job $job_id is still in $job_status state. Checking again in 5 seconds..."
+        sleep 5
     fi
 done
 
