@@ -10,3 +10,5 @@ pip install https://github.com/vllm-project/vllm/releases/download/v${VLLM_VERSI
 # Enable flash attention 2
 pip install vllm-flash-attn
 
+# TODO change this to dev install
+pip install mteb

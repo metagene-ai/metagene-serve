@@ -1,9 +1,0 @@
-gdown
-wandb
-pandas
-scikit-learn
-transformers
-torch
-torchvision
-torchaudio
-datasets
