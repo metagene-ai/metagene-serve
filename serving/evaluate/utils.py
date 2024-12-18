@@ -33,6 +33,7 @@ from vllm.model_executor.models.utils import maybe_prefix
 class LlamaWrapper:
     def __init__(self,
                  model_dir,
+                 model_dtype,
                  seed,
                  max_length=512):
 
@@ -46,6 +47,7 @@ class LlamaWrapper:
             self.tokenizer.add_special_tokens({'pad_token': '[PAD]'})
         self.model = AutoModel.from_pretrained(
             model_dir,
+            torch_dtype=model_dtype,
             trust_remote_code=True,
             device_map="auto")
 
@@ -84,7 +86,8 @@ class LlamaWrapper:
                 outputs = self.model(**inputs)
                 batch_embeddings = outputs.last_hidden_state.mean(dim=1)
 
-            embeddings.extend(batch_embeddings.cpu().numpy())
+            # embeddings.extend(batch_embeddings.cpu().numpy())
+            embeddings.extend(batch_embeddings.cpu().to(torch.float32).numpy())
 
         return embeddings
 
@@ -311,7 +314,8 @@ class DNABERTWrapper:
             with torch.no_grad():
                 outputs = self.model(**inputs)
                 batch_embeddings = outputs.last_hidden_state.mean(dim=1)
-            embeddings.extend(batch_embeddings.cpu().numpy())
+            # embeddings.extend(batch_embeddings.cpu().numpy())
+            embeddings.extend(batch_embeddings.cpu().to(torch.float32).numpy())
 
         return embeddings
 
@@ -370,6 +374,7 @@ class NTWrapper:
             batch_embeddings = torch_outs['hidden_states'][-1]
             attention_mask = torch.unsqueeze(attention_mask, dim=-1)
             mean_sequence_embeddings = torch.sum(attention_mask * batch_embeddings, axis=-2) / torch.sum(attention_mask, axis=1)
-            embeddings.extend(mean_sequence_embeddings.cpu().numpy())
+            # embeddings.extend(mean_sequence_embeddings.cpu().numpy())
+            embeddings.extend(batch_embeddings.cpu().to(torch.float32).numpy())
 
         return embeddings

@@ -2,7 +2,7 @@ import argparse
 import random
 import time
 import torch
-from transformers import AutoModelForCausalLM, BitsAndBytesConfig
+from transformers import PreTrainedTokenizerFast, AutoModelForCausalLM, BitsAndBytesConfig
 
 
 def parse_args():
@@ -37,7 +37,7 @@ def main():
         model_dir,
         quantization_config=quant_config_bnb_4bit,
         device_map="auto")
-    nf4_quantized_model.save_pretrained(model_bnb_4bit)
+    model_bnb_4bit.save_pretrained(model_dir_4bit)
     tokenizer.save_pretrained(model_dir_4bit)
     print(f"Bnb 4bit quantized model saved to {model_dir_4bit}")
 

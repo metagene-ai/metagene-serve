@@ -16,3 +16,9 @@ mamba install pytorch=2.4.1 pytorch-cuda=11.8 -c pytorch -c nvidia -y
 # litgpt
 pip install 'litgpt[all]'
 pip install optimum
+
+# bitsandbytes
+mamba install bitsandbytes=0.45.0 -c conda-forge --no-pyc -y
+
+# quanto
+pip install optimum-quanto

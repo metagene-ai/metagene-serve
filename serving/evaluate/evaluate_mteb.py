@@ -14,6 +14,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--task_type", nargs='+', required=True)
     parser.add_argument("--model_type", type=str)
+    parser.add_argument("--model_dtype", type=str)
     parser.add_argument("--model_dir", type=str)
     parser.add_argument("--model_ckpt", type=str)
     parser.add_argument("--output_dir", type=str)
@@ -28,6 +29,14 @@ def parse_args():
     # NT: "/project/neiswang_1391/MGFM/MGFM-serving/model_ckpts/baselines/nt/nucleotide-transformer-2.5b-multi-species"
 
     args.model_type = args.model_type or "DNABERT-2-117M"
+    args.model_dtype = args.model_dtype or "f32"
+    if args.model_dtype == "f32":
+        args.model_dtype = torch.float32
+    elif args.model_dtype == "f16":
+        args.model_dtype = torch.float16
+    elif args.model_dtype == "bf16":
+        args.model_dtype = torch.bfloat16
+
     args.model_dir = args.model_dir or "/project/neiswang_1391/MGFM/MGFM-serving/model_ckpts"
     args.output_dir = args.output_dir or "/project/neiswang_1391/MGFM/MGFM-serving/outputs/evaluate/mteb"
     args.model_ckpt = args.model_ckpt or "step-00086000" # only for MGFM
@@ -65,7 +74,7 @@ def main():
     elif args.model_type == "MGFM":
         model_dir = f"{args.model_dir}/safetensors/{args.model_ckpt}"
         output_dir = f"{args.output_dir}/non_vllm/{args.model_ckpt}"
-        model = LlamaWrapper(model_dir, args.seed)
+        model = LlamaWrapper(model_dir, args.model_dtype, args.seed)
     else:
         raise ValueError(f"Invalid model type: {args.model_type}")
 

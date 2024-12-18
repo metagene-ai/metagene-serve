@@ -10,7 +10,7 @@ from transformers import PreTrainedTokenizerFast
 import torch
 
 
-N = 1000  # dataset size
+N = 100  # dataset size
 B = 32  # batch size
 CTX_LEN = 12  # context length
 GEN_LEN = 20  # generation length
@@ -157,49 +157,53 @@ def main():
     tokenizer.pad_token = "[PAD]"
     tokenizer.pad_token_id = 0
 
-    # remove leading token
+    # **Oliver-slide: remove leading token**
     # for tokenizer_rebuilt.json => remove some real tokens
     # for tokenizer_rebuilt_bos.json => remove [BOS]
     # for tokenizer_rebuilt_prepend.json => remove _
     # for tokenizer_rebuilt_prepend_bos.json => remove [BOS] and still have _
+    # input_ids = tokenizer(sample_batch,
+    #                       return_tensors="pt",
+    #                       padding=True).input_ids[:, 1:].to(DEVICE)
     input_ids = tokenizer(sample_batch,
                           return_tensors="pt",
-                          padding=True).input_ids[:, 1:].to(DEVICE)
+                          padding=True).input_ids.to(DEVICE)
 
-    print("Checking batch loss on model ... ")
-    batch_loss = sanity_check_batch_loss(model, args.model_type, input_ids)
-
-    print("Checking ground truth-guided generation on model ... ")
-    avg_rank, rank_avgs, all_ranks = sanity_check_generation(
-        model, args.model_type, input_ids,
-        use_gt=True)
+    # print("Checking batch loss on model ... ")
+    # batch_loss = sanity_check_batch_loss(model, args.model_type, input_ids)
+    #
+    # print("Checking ground truth-guided generation on model ... ")
+    # avg_rank, rank_avgs, all_ranks = sanity_check_generation(
+    #     model, args.model_type, input_ids,
+    #     use_gt=True)
 
     print("Checking perfect samples on model ... ")
     perfect_samples = sanity_check_generation(
         model, args.model_type, input_ids,
         use_gt=False)
     perfect_samples_indices = [sample_idx for sample_idx, _ in perfect_samples]
+    print(f"Number of perfect samples: {len(perfect_samples_indices)}")
 
-    print(f"Batch loss: {batch_loss.item()}")
-    print(f"Average rank (ground truth-guided): {avg_rank}")
-    print(f"Perfect samples: {perfect_samples_indices}")
-
-    with open(f"{output_dir}/sanity_check_rets.txt", "w") as f:
-        f.write(f"Validation loss on sample batch: {batch_loss.item()}\n")
-
-        f.write(f"Average rank (ground truth-guided): {avg_rank}\n")
-        f.write(f"All ranks (ground truth-guided):\n")
-        for ranks in all_ranks:
-            f.write(",".join(map(str, ranks)) + "\n")
+    # print(f"Batch loss: {batch_loss.item()}")
+    # print(f"Average rank (ground truth-guided): {avg_rank}")
+    # print(f"Perfect samples: {perfect_samples_indices}")
+    #
+    # with open(f"{output_dir}/sanity_check_rets.txt", "w") as f:
+    #     f.write(f"Validation loss on sample batch: {batch_loss.item()}\n")
+    #
+    #     f.write(f"Average rank (ground truth-guided): {avg_rank}\n")
+    #     f.write(f"All ranks (ground truth-guided):\n")
+    #     for ranks in all_ranks:
+    #         f.write(",".join(map(str, ranks)) + "\n")
 
     with open(f"{output_dir}/perfect_samples.txt", "w") as f:
         # Collect all sample_idx values in a list and join them as a single line
-        f.write(f"perfect sample indices:\n")
-        f.write(" ".join(map(str, perfect_samples_indices)) + "\n")
+        # f.write(f"perfect sample indices:\n")
+        # f.write(" ".join(map(str, perfect_samples_indices)) + "\n")
         for sample_idx, sample in perfect_samples:
-            f.write(f"Sample {sample_idx}:\n")
+            # f.write(f"Sample {sample_idx}:\n")
             f.write(sample_batch[sample_idx] + "\n")
-            f.write(tokenizer.decode(sample) + "\n")
+            # f.write(tokenizer.decode(sample) + "\n")
 
 
 if __name__ == "__main__":
