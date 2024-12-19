@@ -58,7 +58,13 @@
       "special": true
     }
   ],
-  "normalizer": null,
+  "normalizer": {
+    "type": "Replace",
+    "pattern": {
+      "Regex": "^"
+    },
+    "content": "_"
+  },
   "pre_tokenizer": {
     "type": "Whitespace"
   },
@@ -68,6 +74,12 @@
       {
         "Sequence": {
           "id": "A",
+          "type_id": 0
+        }
+      },
+      {
+        "SpecialToken": {
+          "id": "[EOS]",
           "type_id": 0
         }
       }
@@ -87,6 +99,15 @@
       }
     ],
     "special_tokens": {
+      "[EOS]": {
+        "id": "[EOS]",
+        "ids": [
+          4
+        ],
+        "tokens": [
+          "[EOS]"
+        ]
+      },
       "[MASK]": {
         "id": "[MASK]",
         "ids": [

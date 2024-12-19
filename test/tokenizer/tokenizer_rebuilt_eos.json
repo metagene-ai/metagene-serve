@@ -70,6 +70,12 @@
           "id": "A",
           "type_id": 0
         }
+      },
+      {
+        "SpecialToken": {
+          "id": "[EOS]",
+          "type_id": 0
+        }
       }
     ],
     "pair": [
@@ -87,6 +93,15 @@
       }
     ],
     "special_tokens": {
+      "[EOS]": {
+        "id": "[EOS]",
+        "ids": [
+          4
+        ],
+        "tokens": [
+          "[EOS]"
+        ]
+      },
       "[MASK]": {
         "id": "[MASK]",
         "ids": [
