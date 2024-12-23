@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-source ./scripts/bash/set/utils/set_vars.sh
+source ./serving/scripts/set/env/set_vars.sh
 
 echo "Downloading litgpt model ckpt from Wasabi ..."
 
@@ -19,5 +19,4 @@ LOCAL_MODEL_DIR="${MODEL_CKPT_DIR}/litgpt/${CKPT_STEP}"
 mkdir -p "${LOCAL_MODEL_DIR}"
 
 aws s3 sync "${REMOTE_MODEL_DIR}" "${LOCAL_MODEL_DIR}" --endpoint-url=https://s3.us-west-1.wasabisys.com
-cp "${CODE_DIR}/submodules/MGFM-train/train/minbpe/tokenizer/large-mgfm-1024.model" "${LOCAL_MODEL_DIR}/tokenizer.model"
 echo "The litgpt model checkpoint has been downloaded to ${LOCAL_MODEL_DIR}"

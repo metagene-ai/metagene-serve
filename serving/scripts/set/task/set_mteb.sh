@@ -19,6 +19,10 @@ pip install https://github.com/vllm-project/vllm/releases/download/v0.6.4/vllm-0
 pip install accelerate
 
 # mteb
-MTEB_PATH="./serving/evaluate/mteb"
-git clone https://github.com/embeddings-benchmark/mteb.git "${MTEB_PATH}"
-cd "${MTEB_PATH}" && pip install -e . && cd -
+MTEB_PATH="./serving/evaluate/gene-mteb"
+if [ -d "${MTEB_PATH}" ]; then
+    cd "${MTEB_PATH}" && git pull && cd -
+else
+    git clone https://github.com/shangshang-wang/gene-mteb.git "${MTEB_PATH}"
+    cd "${MTEB_PATH}" && pip install -e . && cd -
+fi

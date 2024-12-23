@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-source ./scripts/bash/set/utils/set_vars.sh
+source ./serving/scripts/set/env/set_vars.sh
 
 # for sanity check and quantization
 GDOWN_PATH="1hbq0BTS0zbVS8Y708NE4_O21TmRuIM8B" # cleaned_tokens_2000000000.txt

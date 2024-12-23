@@ -6,7 +6,15 @@ export NUMEXPR_NUM_THREADS=1
 export OPENBLAS_NUM_THREADS=1
 export OMP_NUM_THREADS=1
 export CUDA_LAUNCH_BLOCKING=1
-export TOKENIZERS_PARALLELISM=true
+export TOKENIZERS_PARALLELISM=false
+
+export NCCL_P2P_DISABLE=1
+export NCCL_SHM_DISABLE=1
+export NCCL_IB_DISABLE=1
+
+export DS_LOG_LEVEL=error
+export MKL_THREADING_LAYER=GNU
+
 
 if hostname | grep -qi "usc"; then
     # the USC CARC Discovery env
@@ -18,17 +26,26 @@ if hostname | grep -qi "usc"; then
     export PROJECT_PREFIX="/project/${PROJECT_ACCOUNT}"
     export SCRATCH_PREFIX="/scratch1/$USER"
 else
-    # common GPU instance, e.g., Vast and Primeintellect
-    export CLUSTER_NAME="GPU instance"
+    # the ACCESS SDSC Expanse env
+    export CLUSTER_NAME="sdsc expanse"
     echo "Env name: ${CLUSTER_NAME}"
-    export PROJECT_ACCOUNT="None"
+    export PROJECT_ACCOUNT="mia346"
 
-    export HOME_PREFIX="/workspace"
-    export PROJECT_PREFIX="/project"
-    export SCRATCH_PREFIX="/scratch"
-    mkdir -p "$PROJECT_PREFIX"
-    mkdir -p "$SCRATCH_PREFIX"
+    export HOME_PREFIX="/home1/$USER/workspace"
+    export PROJECT_PREFIX="/expanse/lustre/projects/${PROJECT_ACCOUNT}/$USER/projects"
+    export SCRATCH_PREFIX="/expanse/lustre/scratch/$USER/temp_project/projects"
 fi
+
+# # common GPU instance, e.g., Vast and Primeintellect
+# export CLUSTER_NAME="GPU instance"
+# echo "Env name: ${CLUSTER_NAME}"
+# export PROJECT_ACCOUNT="None"
+
+# export HOME_PREFIX="/workspace"
+# export PROJECT_PREFIX="/project"
+# export SCRATCH_PREFIX="/scratch"
+# mkdir -p "$PROJECT_PREFIX"
+# mkdir -p "$SCRATCH_PREFIX"
 
 # the following PROJECT_POSTFIX hopefully would be the only variable to change for different projects
 # MGFM-serving: the folder containing the Github repo for development
@@ -48,4 +65,16 @@ export CACHE_DIR="${PROJECT_DIR}/.cache"
 export HF_HOME="${CACHE_DIR}/huggingface"
 export HUGGINGFACE_HUB_CACHE="${CACHE_DIR}/huggingface/hub"
 export HG_DATASETS_CACHE="${CACHE_DIR}/huggingface/datasets"
+export HF_TOKEN="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"
+
 export TRITON_CACHE_DIR="${CACHE_DIR}/triton_cache"
+
+export WANDB_API_KEY="8a590118879d8c43eac0ebb53bea5bdd437e87c8"
+export WANDB_DIR="${OUTPUT_DIR}/wandb"
+
+export BNB_CUDA_VERSION=118
+export CUDA_HOME=$CONDA_PREFIX
+export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:$LD_LIBRARY_PATH"
+
+export PYTHONPATH="/home/$USER/workspace/MGFM/MGFM-serving":$PYTHONPATH
+export PYTHONPATH="/home/$USER/workspace/MGFM/MGFM-serving/serving":$PYTHONPATH
