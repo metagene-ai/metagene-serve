@@ -1,0 +1,17 @@
+FROM /project/neiswang_1391/MGFM/MGFM-serving/model_ckpts/safetensors/step-00086000
+
+
+PARAMETER repeat_penalty 0
+PARAMETER num_predict 42
+PARAMETER repeat_last_n 0
+PARAMETER num_ctx 512
+PARAMETER temperature 0
+
+PARAMETER mirostat 0
+PARAMETER mirostat_eta 0.1
+PARAMETER mirostat_tau 5.0
+PARAMETER seed 42
+PARAMETER tfs_z 1
+PARAMETER top_k 40
+PARAMETER top_p 0.9
+PARAMETER min_p 0.05
