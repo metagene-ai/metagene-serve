@@ -1,4 +1,5 @@
 import argparse
+from litgpt import LLM
 from litgpt.utils import chunked_cross_entropy
 import numpy as np
 import random
@@ -10,8 +11,8 @@ from transformers import PreTrainedTokenizerFast, AutoModelForCausalLM, BitsAndB
 import torch
 
 
-N = 2000  # dataset size
-B = 1200  # batch size
+N = 100  # dataset size
+B = 32  # batch size
 CTX_LEN = 12  # context length
 GEN_LEN = 20  # generation length
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -68,17 +69,15 @@ def get_dataset(data_file, use_prepend=1):
     return dataset
 
 def get_model(model_dir, mode_type, mode_dtype=torch.float32, use_quantized=0):
-    if mode_type == "safetensors":
+    if mode_type == "litgpt":
+        model = LLM.load(model_dir)
+    elif mode_type == "safetensors":
         if use_quantized:
             print(f"\nLoading model in quantized format {mode_dtype}\n")
-            if mode_dtype == "bnb-4bit":
-                model = AutoModelForCausalLM.from_pretrained(model_dir).to(DEVICE)
-            elif mode_dtype == "bnb-8bit":
+            if mode_dtype == "bnb-8bit":
                 model = AutoModelForCausalLM.from_pretrained(model_dir)
-            elif mode_dtype == "quanto-4bit" or mode_dtype == "quanto-8bit":
-                model = QuantizedModelForCausalLM.from_pretrained(model_dir).to(DEVICE)
             else:
-                model = AutoModelForCausalLM.from_pretrained(model_dir)
+                model = AutoModelForCausalLM.from_pretrained(model_dir).to(DEVICE)
         else:
             print(f"\nLoading model in dtype {mode_dtype}\n")
             model = AutoModelForCausalLM.from_pretrained(model_dir,
@@ -91,7 +90,9 @@ def sanity_check_batch_loss(model, model_type, input_ids):
     target_ids = input_ids.clone()
     target_ids[target_ids == 0] = -100
 
-    if model_type == "safetensors":
+    if model_type == "litgpt":
+        logits = model.model(input_ids)
+    elif model_type == "safetensors":
         with torch.no_grad():
             outputs = model(input_ids)
             logits = outputs.logits
@@ -118,7 +119,9 @@ def sanity_check_generation(model, model_type, input_ids, use_gt=True):
             if gt_tok == 0:
                 break
 
-            if model_type == "safetensors":
+            if model_type == "litgpt":
+                logits = model.model(ctx)[:, -1, :]
+            elif model_type == "safetensors":
                 with torch.no_grad():
                     outputs = model(ctx)
                     logits = outputs.logits[:, -1, :]
@@ -159,10 +162,9 @@ def sanity_check_generation(model, model_type, input_ids, use_gt=True):
                 # Store the initial context and the full input_ids for perfect samples
                 perfect_samples.append((sample_idx, input_ids[sample_idx]))
 
-    rank_avgs = [sum(ranks) / len(ranks) for ranks in all_ranks]
-    avg_rank = sum(rank_avgs) / len(rank_avgs)
-
     if use_gt:
+        rank_avgs = [sum(ranks) / len(ranks) for ranks in all_ranks]
+        avg_rank = sum(rank_avgs) / len(rank_avgs)
         return avg_rank, rank_avgs, all_ranks
     else:
         return perfect_samples
@@ -212,6 +214,7 @@ def main():
         model, args.model_type, input_ids,
         use_gt=False)
     perfect_samples_indices = [sample_idx for sample_idx, _ in perfect_samples]
+    print(f"number of perfect samples: {len(perfect_samples_indices)}")
 
     print(f"Batch loss: {batch_loss.item()}")
     print(f"Average rank (ground truth-guided): {avg_rank}")

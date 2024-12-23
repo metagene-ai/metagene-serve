@@ -1,14 +1,25 @@
 import argparse
+import json
 import os
 import sys
-sys.path.append("/home1/shangsha/workspace/MGFM/MGFM-serving/serving/evaluate/mteb")
+sys.path.append("/home1/shangsha/workspace/MGFM/MGFM-serving/serving/evaluate/gene-mteb")
 import mteb
 from tqdm import tqdm
 from transformers.trainer_utils import set_seed
 import torch
 import torch.distributed as dist
+from vllm import ModelRegistry
 
-from serving.evaluate.utils import LlamaWrapper, DNABERTWrapper, NTWrapper
+from serving.evaluate.mteb_wrapper import LlamaWrapper, DNABERTWrapper, NTWrapper
+from serving.evaluate.vllm_wrapper import vllmLlamaEmbeddingModel, vllmLlamaWrapper
+
+
+def rename_config_model_arch(config_file, name):
+    with open(config_file, 'r') as file:
+        data = json.load(file)
+    data["architectures"] = [name]
+    with open(config_file, 'w') as file:
+        json.dump(data, file, indent=4)
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -18,6 +29,7 @@ def parse_args():
     parser.add_argument("--model_dir", type=str)
     parser.add_argument("--model_ckpt", type=str)
     parser.add_argument("--output_dir", type=str)
+    parser.add_argument("--use_vllm", action="store_true")
     parser.add_argument("--seed", type=int)
 
     args = parser.parse_args()
@@ -25,7 +37,7 @@ def parse_args():
     # DNABERT:
         # DNABERT-2-117M: "/project/neiswang_1391/MGFM/MGFM-serving/model_ckpts/baselines/dnabert/DNABERT-2-117M"
         # DNABERT-S: "/project/neiswang_1391/MGFM/MGFM-serving/model_ckpts/baselines/dnabert/DNABERT-S"
-    # MGFM: "/project/neiswang_1391/MGFM/MGFM-serving/model_ckpts/safetensors/step-00086000"
+    # safetensors: "/project/neiswang_1391/MGFM/MGFM-serving/model_ckpts/safetensors/step-00086000"
     # NT: "/project/neiswang_1391/MGFM/MGFM-serving/model_ckpts/baselines/nt/nucleotide-transformer-2.5b-multi-species"
 
     args.model_type = args.model_type or "DNABERT-2-117M"
@@ -47,49 +59,76 @@ def parse_args():
 
     return args
 
+
 def main():
     args = parse_args()
+    set_seed(args.seed)
 
-    print("Wrapping model with mtebWrapper ...")
-    if args.model_type in [
-        "DNABERT-2-117M",
-        "DNABERT-S"
-    ]:
-        model_dir = f"{args.model_dir}/baselines/{args.model_type}"
-        output_dir = f"{args.output_dir}/dnabert/{args.model_type}"
-        model = DNABERTWrapper(model_dir, args.seed)
-    elif args.model_type in [
-        "NT-2.5b-multi-species",
-        "NT-2.5b-1000g",
-        "NT-500m-1000g",
-        "NT-500m-human-ref",
-        "NT-v2-100m-multi-species",
-        "NT-v2-250m-multi-species",
-        "NT-v2-500m-multi-species",
-        "NT-v2-50m-multi-species"
-    ]:
-        model_dir = f"{args.model_dir}/baselines/{args.model_type}"
-        output_dir = f"{args.output_dir}/nt/{args.model_type}"
-        model = NTWrapper(model_dir, args.seed)
-    elif args.model_type == "MGFM":
-        model_dir = f"{args.model_dir}/safetensors/{args.model_ckpt}"
-        output_dir = f"{args.output_dir}/non_vllm/{args.model_ckpt}"
-        model = LlamaWrapper(model_dir, args.model_dtype, args.seed)
+    if args.use_vllm:
+        assert args.model_type == "safetensors", "VLLM only supports MGFM models"
+
+        model_dir = f"{args.model_dir}/{args.model_type}/{args.model_ckpt}"
+        output_dir = f"{args.output_dir}/vllm/{args.model_ckpt}"
+
+        print(f"Modifying the config.json file in {model_dir} ...")
+        config_file = f"{model_dir}/config.json"
+        embedding_model_name = "vllmLlamaEmbeddingModel"
+        rename_config_model_arch(config_file, embedding_model_name)
+
+        print("Registering the embedding model ...")
+        always_true_detection = lambda architectures: True
+        ModelRegistry.is_embedding_model = always_true_detection
+        ModelRegistry.register_model(embedding_model_name, vllmLlamaEmbeddingModel)
+
+        print("Wrapping vllm model with vllmLlamaWrapper ...")
+        model = vllmLlamaWrapper(
+            model_dir=model_dir,
+            seed=args.seed,
+            dtype=torch.bfloat16)
     else:
-        raise ValueError(f"Invalid model type: {args.model_type}")
+        print("Wrapping model with mtebWrapper ...")
+        if args.model_type in [
+            "DNABERT-2-117M",
+            "DNABERT-S"
+        ]:
+            model_dir = f"{args.model_dir}/baselines/{args.model_type}"
+            output_dir = f"{args.output_dir}/dnabert/{args.model_type}"
+            model = DNABERTWrapper(model_dir, args.seed)
+        elif args.model_type in [
+            "NT-2.5b-multi-species",
+            "NT-2.5b-1000g",
+            "NT-500m-1000g",
+            "NT-500m-human-ref",
+            "NT-v2-100m-multi-species",
+            "NT-v2-250m-multi-species",
+            "NT-v2-500m-multi-species",
+            "NT-v2-50m-multi-species"
+        ]:
+            model_dir = f"{args.model_dir}/baselines/{args.model_type}"
+            output_dir = f"{args.output_dir}/nt/{args.model_type}"
+            model = NTWrapper(model_dir, args.seed)
+        elif args.model_type == "safetensors":
+            model_dir = f"{args.model_dir}/safetensors/{args.model_ckpt}"
+            output_dir = f"{args.output_dir}/non_vllm/{args.model_ckpt}"
+            model = LlamaWrapper(model_dir, args.model_dtype, args.seed)
+        else:
+            raise ValueError(f"Invalid model type: {args.model_type}")
 
     print(f"Running mteb tasks with {args.model_type} ...")
     tasks = mteb.get_tasks(tasks=args.task_type)
     evaluation = mteb.MTEB(tasks=tasks)
     print("Running evaluation ...")
     results = evaluation.run(model,
-                             verbosity=2,
                              overwrite_results=True,
                              output_folder=output_dir,
-                             encode_kwargs={"batch_size": 16})
+                             encode_kwargs={"batch_size": 32})
 
     for mteb_results in results:
         print(f"{args.model_type} on {mteb_results.task_name}: {mteb_results.get_score()}")
+
+    if args.use_vllm:
+        print("Restoring the config.json file ...")
+        rename_config_model_arch(config_file, "LlamaForCausalLM")
 
 
 if __name__ == "__main__":

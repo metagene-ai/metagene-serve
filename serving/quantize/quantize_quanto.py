@@ -2,7 +2,7 @@
 # https://github.com/huggingface/optimum-quanto
 # https://github.com/huggingface/optimum-quanto/issues/136
 import argparse
-from optimum.quanto import QuantizedModelForCausalLM, qint4, qint8, freeze, quantize
+from optimum.quanto import QuantizedModelForCausalLM, qint4, freeze
 from transformers import AutoModelForCausalLM, PreTrainedTokenizerFast
 import torch
 
