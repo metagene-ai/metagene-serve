@@ -11,7 +11,7 @@ import torch.distributed as dist
 from vllm import ModelRegistry
 
 from serving.evaluate.mteb_wrapper import LlamaWrapper, DNABERTWrapper, NTWrapper
-from serving.evaluate.vllm_wrapper import vllmLlamaEmbeddingModel, vllmLlamaWrapper
+from serving.evaluate.vllm_wrapper import vllmLlamaWrapper
 
 
 def rename_config_model_arch(config_file, name):
@@ -70,21 +70,11 @@ def main():
         model_dir = f"{args.model_dir}/{args.model_type}/{args.model_ckpt}"
         output_dir = f"{args.output_dir}/vllm/{args.model_ckpt}"
 
-        print(f"Modifying the config.json file in {model_dir} ...")
-        config_file = f"{model_dir}/config.json"
-        embedding_model_name = "vllmLlamaEmbeddingModel"
-        rename_config_model_arch(config_file, embedding_model_name)
-
-        print("Registering the embedding model ...")
-        always_true_detection = lambda architectures: True
-        ModelRegistry.is_embedding_model = always_true_detection
-        ModelRegistry.register_model(embedding_model_name, vllmLlamaEmbeddingModel)
-
         print("Wrapping vllm model with vllmLlamaWrapper ...")
         model = vllmLlamaWrapper(
             model_dir=model_dir,
             seed=args.seed,
-            dtype=torch.bfloat16)
+            dtype=args.model_dtype)
     else:
         print("Wrapping model with mtebWrapper ...")
         if args.model_type in [
@@ -125,10 +115,6 @@ def main():
 
     for mteb_results in results:
         print(f"{args.model_type} on {mteb_results.task_name}: {mteb_results.get_score()}")
-
-    if args.use_vllm:
-        print("Restoring the config.json file ...")
-        rename_config_model_arch(config_file, "LlamaForCausalLM")
 
 
 if __name__ == "__main__":
