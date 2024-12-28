@@ -66,11 +66,11 @@ class LlamaWrapper:
             if "token_type_ids" in inputs:
                 del inputs["token_type_ids"]
 
+            print(inputs)
+            print(inputs["input_ids"].shape)
             with torch.no_grad():
                 outputs = self.model(**inputs)
                 batch_embeddings = outputs.last_hidden_state.mean(dim=1)
-
-            # embeddings.extend(batch_embeddings.cpu().numpy())
             embeddings.extend(batch_embeddings.cpu().to(torch.float32).numpy())
 
         return  np.array(embeddings)
@@ -123,7 +123,6 @@ class DNABERTWrapper:
             with torch.no_grad():
                 outputs = self.model(**inputs)
                 batch_embeddings = outputs.last_hidden_state.mean(dim=1)
-            # embeddings.extend(batch_embeddings.cpu().numpy())
             embeddings.extend(batch_embeddings.cpu().to(torch.float32).numpy())
 
         return  np.array(embeddings)
@@ -184,7 +183,6 @@ class NTWrapper:
             batch_embeddings = torch_outs['hidden_states'][-1]
             attention_mask = torch.unsqueeze(attention_mask, dim=-1)
             mean_sequence_embeddings = torch.sum(attention_mask * batch_embeddings, axis=-2) / torch.sum(attention_mask, axis=1)
-            # embeddings.extend(mean_sequence_embeddings.cpu().numpy())
             embeddings.extend(mean_sequence_embeddings.cpu().to(torch.float32).numpy())
 
         return  np.array(embeddings)
