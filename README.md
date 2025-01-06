@@ -1,6 +1,6 @@
-# mgfm.serving
+# METAGENE-1: Metagenomic Foundation Model for Pandemic Monitoring
 
-Everything related to MGFM usage after training/tuning and inference-time optimization.
+This repository contains serving code for METAGENE-1.
 
 ## Working Sheet
 
