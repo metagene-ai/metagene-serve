@@ -1,8 +1,0 @@
-FROM /project/neiswang_1391/MGFM/MGFM-serving/model_ckpts/gguf/step-00086000/model.gguf
-
-PARAMETER temperature 0.8
-PARAMETER seed 42
-PARAMETER num_predict 512
-PARAMETER top_k 40
-PARAMETER top_p 0.9
-PARAMETER min_p 0.05

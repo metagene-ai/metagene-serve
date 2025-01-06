@@ -5,11 +5,6 @@ source ./serving/scripts/set/env/set_vars.sh
 
 echo "Downloading litgpt model ckpt from Wasabi ..."
 
-## the HF 78k model ckpt
-# REMOTE_MODEL_DIR="s3://mgfm-02/model-weights/hf-ckpt-78k"
-# LOCAL_MODEL_DIR="${MODEL_CKPT_DIR}/safetensors/${CKPT_STEP}"
-# mkdir -p "${LOCAL_MODEL_DIR}"
-
 # export CKPT_STEP="step-00078000"
 # REMOTE_MODEL_DIR="s3://mgfm-02/model-checkpoints/initial-checkpoints/${CKPT_STEP}"
 
