@@ -1,14 +1,16 @@
 import argparse
-from litgpt import LLM
-from litgpt.utils import chunked_cross_entropy
+# from litgpt import LLM
+# from litgpt.utils import chunked_cross_entropy
 import numpy as np
 import random
 from optimum.quanto import QuantizedModelForCausalLM
 import time
 from tqdm import tqdm
 from transformers.trainer_utils import set_seed
-from transformers import PreTrainedTokenizerFast, AutoModelForCausalLM, BitsAndBytesConfig
+from transformers import PreTrainedTokenizerFast, AutoModelForCausalLM, BitsAndBytesConfig, BatchEncoding
 import torch
+from vllm import LLM as VLLM
+from vllm import SamplingParams
 
 
 N = 100  # dataset size
@@ -114,7 +116,6 @@ def sanity_check_generation(model, model_type, input_ids, use_gt=True):
 
         for tok_idx in range(min(input_ids.shape[1] - CTX_LEN, GEN_LEN)):
             gt_tok = input_ids[sample_idx, CTX_LEN + tok_idx]
-
             # Break if the current token is a padding token
             if gt_tok == 0:
                 break
@@ -127,8 +128,6 @@ def sanity_check_generation(model, model_type, input_ids, use_gt=True):
                     logits = outputs.logits[:, -1, :]
             else:
                 raise ValueError(f"Invalid model format: {model_type}")
-
-            # Evaluate rank of the ground truth token to the logits
 
             rank = torch.argsort(logits, descending=True).squeeze().tolist().index(gt_tok.item())
             ranks.append(rank)
@@ -184,22 +183,17 @@ def main():
     dataset = get_dataset(args.data_file, use_prepend=args.use_prepend)
     sample_batch = dataset[:B]
 
-    model = get_model(model_dir, args.model_type, args.model_dtype, use_quantized=args.use_quantized)
+    model = get_model(model_dir, args.model_type, args.model_dtype,
+                      use_quantized=args.use_quantized, use_vllm=args.use_vllm)
     tokenizer = PreTrainedTokenizerFast.from_pretrained(model_dir)
     tokenizer.pad_token = "[PAD]"
     tokenizer.pad_token_id = 0
 
-    # **Oliver-slide: remove leading token**
-    # for tokenizer_rebuilt.json => remove some real tokens
-    # for tokenizer_rebuilt_bos.json => remove [BOS]
-    # for tokenizer_rebuilt_prepend.json => remove _
-    # for tokenizer_rebuilt_prepend_bos.json => remove [BOS] and still have _
-    # input_ids = tokenizer(sample_batch,
-    #                       return_tensors="pt",
-    #                       padding=True).input_ids[:, 1:].to(DEVICE)
     input_ids = tokenizer(sample_batch,
                           return_tensors="pt",
-                          padding=True).input_ids.to(DEVICE)
+                          padding=True,
+                          truncation=True,
+                          max_length=512).input_ids.to(DEVICE)
 
     print("Checking batch loss on model ... ")
     batch_loss = sanity_check_batch_loss(model, args.model_type, input_ids)
@@ -207,12 +201,12 @@ def main():
     print("Checking ground truth-guided generation on model ... ")
     avg_rank, rank_avgs, all_ranks = sanity_check_generation(
         model, args.model_type, input_ids,
-        use_gt=True)
+        use_gt=True, use_vllm=args.use_vllm)
 
     print("Checking perfect samples on model ... ")
     perfect_samples = sanity_check_generation(
         model, args.model_type, input_ids,
-        use_gt=False)
+        use_gt=False, use_vllm=args.use_vllm)
     perfect_samples_indices = [sample_idx for sample_idx, _ in perfect_samples]
     print(f"number of perfect samples: {len(perfect_samples_indices)}")
 

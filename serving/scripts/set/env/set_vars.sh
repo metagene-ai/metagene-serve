@@ -70,11 +70,9 @@ export HF_TOKEN="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"
 export TRITON_CACHE_DIR="${CACHE_DIR}/triton_cache"
 
 export WANDB_API_KEY="8a590118879d8c43eac0ebb53bea5bdd437e87c8"
-export WANDB_DIR="${OUTPUT_DIR}/wandb"
+export WANDB_DIR="${OUTPUT_DIR}"
+mkdir -p "${WANDB_DIR}/wandb"
 
 export BNB_CUDA_VERSION=118
 export CUDA_HOME=$CONDA_PREFIX
 export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:$LD_LIBRARY_PATH"
-
-export PYTHONPATH="/home/$USER/workspace/MGFM/MGFM-serving":$PYTHONPATH
-export PYTHONPATH="/home/$USER/workspace/MGFM/MGFM-serving/serving":$PYTHONPATH

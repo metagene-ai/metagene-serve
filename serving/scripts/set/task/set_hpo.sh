@@ -18,6 +18,9 @@ pip install torchao==0.7.0 --index-url https://download.pytorch.org/whl/cu118
 mamba install gcc gxx -c conda-forge -y # ensure > 9.0 for ninja JIT
 pip install deepspeed==0.15.4
 
+# flash attention 2 (not for V100)
+pip install flash-attn --no-build-isolation
+
 # bitsandbytes
 pip install setuptools
 mamba install bitsandbytes=0.45.0 -c conda-forge --no-deps -y

@@ -90,7 +90,9 @@ class DataCollatorForSupervisedDataset(object):
     def __call__(self, instances: Sequence[Dict]) -> Dict[str, torch.Tensor]:
         input_ids, labels = tuple([instance[key] for instance in instances] for key in ("input_ids", "labels"))
         input_ids = torch.nn.utils.rnn.pad_sequence(
-            input_ids, batch_first=True, padding_value=self.tokenizer.pad_token_id)
+            input_ids,
+            batch_first=True,
+            padding_value=self.tokenizer.pad_token_id)
         labels = torch.Tensor(labels).long()
         return dict(
             input_ids=input_ids,
@@ -118,16 +120,6 @@ def compute_metrics(eval_pred):
         "recall": recall_score(valid_labels, valid_predictions, average="macro", zero_division=0),
     }
 
-def get_tokenize_fn(tokenizer, max_seq_length=512):
-    def _tokenize(examples):
-        encodings = tokenizer(
-            examples["sequence"],
-            truncation=True,
-            padding='longest',
-            return_tensors="pt")
-        return encodings
-    return _tokenize
-
 # Some notes about models choices
 #  we have either z2 and z3 from deeepspeed for optimization
 #   z2 have supports for bnb quantization
@@ -151,8 +143,10 @@ def get_model_init_fn(model_args, num_labels):
             model_args.model_name_or_path,
             quantization_config=bnb_config if model_args.use_4bit_quantization else None,
             num_labels=num_labels,
-            attn_implementation="eager",  # "flash_attention_2" is not for V100 :(
-            torch_dtype=torch.bfloat16)
+            # attn_implementation="eager",  # "flash_attention_2" is not for V100 :(
+            attn_implementation="flash_attention_2",
+            torch_dtype = torch.bfloat16
+        ).to(torch.device("cuda"))
         model.config._name_or_path = model_args.model_name_or_path
 
         peft_config = LoraConfig(
@@ -163,7 +157,8 @@ def get_model_init_fn(model_args, num_labels):
             bias="none",
             task_type="SEQ_CLS",
             inference_mode=False,
-            modules_to_save=["classifier", "score"])
+            # modules_to_save=["classifier", "score"]
+        )
         model = get_peft_model(model, peft_config)
 
         # SFTTrainer in the current version of trl is not compatible with transformers 4.45.3
@@ -191,17 +186,17 @@ def get_split_tokenized_dataset(tokenizer, data_args):
 
 @dataclass
 class ModelArguments:
-    model_name_or_path: Optional[str] = field(default="/expanse/lustre/projects/mia346/swang31/projects/MGFM/MGFM-serving/model_ckpts/safetensors/step-00086000")
+    model_name_or_path: Optional[str] = field(default="model_ckpts/safetensors/step-00086000")
     use_4bit_quantization: Optional[bool] = field(default=False)
     lora_alpha: Optional[int] = field(default=16)
     lora_dropout: Optional[float] = field(default=0.1)
     r: Optional[int] = field(default=64)
     target_modules: Optional[str] = field(default="q_proj,k_proj,v_proj")
+    model_max_length: Optional[int] = field(default=512)
 
 @dataclass
 class DataArguments:
     data_dir: Optional[str] = field(default="./assets/data/GUE/EMP/H3")
-    max_seq_length: Optional[int] = field(default=512)
 
 @dataclass
 class UtilsArguments:
@@ -223,6 +218,8 @@ def main():
         print(f"\nLoading tokenizer from {model_args.model_name_or_path}")
     tokenizer = PreTrainedTokenizerFast.from_pretrained(
         model_args.model_name_or_path,
+        model_max_length=model_args.model_max_length,
+        padding_side="right",
         return_tensors="pt")
 
     # tokenized dataset
@@ -258,6 +255,7 @@ def main():
         trial_output = {
             'trial_number': utils_args.trial_number,
             'mcc': eval_metrics['eval_mcc']
+            # 'f1': eval_metrics['eval_f1']
         }
         json.dump(trial_output, f, indent=4)
 

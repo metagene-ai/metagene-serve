@@ -66,8 +66,6 @@ class LlamaWrapper:
             if "token_type_ids" in inputs:
                 del inputs["token_type_ids"]
 
-            print(inputs)
-            print(inputs["input_ids"].shape)
             with torch.no_grad():
                 outputs = self.model(**inputs)
                 batch_embeddings = outputs.last_hidden_state.mean(dim=1)

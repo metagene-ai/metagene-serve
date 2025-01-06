@@ -21,6 +21,9 @@ def parse_args():
     parser.set_defaults(use_4bit_quantization=False)
 
     parser.add_argument('--data_dir', type=str)
+    parser.add_argument('--model_max_length', type=int)
+    parser.add_argument('--num_train_epochs', type=int)
+
     parser.add_argument('--accelerate_config', type=str)
     parser.add_argument('--run_name', type=str)
     parser.add_argument('--output_dir', type=str)
@@ -37,16 +40,19 @@ def parse_args():
 
 def objective(trial):
     # define the hyperparameters
-    learning_rate = trial.suggest_categorical("learning_rate", [
-        3e-4, 4e-4, 5e-4, 6e-4, 7e-4, 8e-4, 9e-4, 1e-3])
-    r = trial.suggest_categorical("r", [8])
-    lora_alpha = trial.suggest_categorical("lora_alpha", [16])
-    lora_dropout = trial.suggest_categorical("lora_dropout", [0.1])
-    target_modules = trial.suggest_categorical("target_module", [
-        "q_proj,k_proj",
-        "q_proj,v_proj",
-        "q_proj,k_proj,v_proj",
-        "q_proj,k_proj,v_proj,o_proj"])
+    learning_rate = trial.suggest_categorical("learning_rate", [1e-3])
+    r = trial.suggest_categorical("r", [
+        8])
+    lora_alpha = trial.suggest_categorical("lora_alpha", [
+        16])
+    lora_dropout = trial.suggest_categorical("lora_dropout", [0.05])
+    target_modules = trial.suggest_categorical("target_module",[
+        # "q_proj,v_proj",
+        # "q_proj,k_proj",
+        # "q_proj,k_proj,v_proj",
+        # "q_proj,k_proj,v_proj,o_proj",
+        "q_proj,k_proj,v_proj,o_proj,down_proj,up_proj,gate_proj"
+    ])
 
     output_dir = trial.user_attrs['output_dir']
     logging_dir = trial.user_attrs['logging_dir']
@@ -63,15 +69,16 @@ def objective(trial):
         f"--lora_alpha {lora_alpha} "
         f"--lora_dropout {lora_dropout} "
         f"--target_modules {target_modules} "
-
+        f"--model_max_length {trial.user_attrs['model_max_length']} "
+        
         # ** training arguments **
         f"--seed {trial.user_attrs['seed']} "
         f"--bf16 {True} "
-        f"--num_train_epochs {1} "
-        f"--per_device_train_batch_size {320} " 
+        f"--num_train_epochs {trial.user_attrs['num_train_epochs']} "
+        f"--per_device_train_batch_size {8} " 
         f"--per_device_eval_batch_size {64} "
         f"--gradient_checkpointing {True} "
-        f"--gradient_accumulation_steps {4} "
+        f"--gradient_accumulation_steps {1} "
         f"--learning_rate {learning_rate} "
         f"--warmup_steps {50} "
         f"--weight_decay {0.01} "
@@ -80,14 +87,13 @@ def objective(trial):
         f"--eval_strategy 'no' "
         f"--logging_strategy 'steps' "
         f"--log_level 'info' "
-        f"--logging_steps {50} "
+        f"--logging_steps {10} "
         f"--logging_dir {logging_dir} "
         f"--output_dir {output_dir} "
         f"--overwrite_output_dir {True} "
 
         # ** data arguments **
         f"--data_dir {trial.user_attrs['data_dir']} "
-        f"--max_seq_length {512} "
 
         # ** utils arguments **
         f"--trial_output_file {trial_output_file} "
@@ -114,14 +120,18 @@ def objective(trial):
         with open(trial_output_file, 'r') as f:
             metrics = json.load(f)
         mcc = metrics["mcc"]
+        # f1 = metrics["f1"]
     except:
         mcc = float('inf')
+        # f1 = float('inf')
 
     wandb.log({
         "mcc": mcc,
+        # "f1": f1,
         "params": trial.params,
     })
     return mcc
+    # return f1
 
 
 def main():
@@ -131,7 +141,7 @@ def main():
     # set up hf and wandb
     login(token=args.hf_token)
     wandb.login(key=args.wandb_api_key)
-    if args.wandb_run_id is not None:
+    if args.wandb_run_id != "":
         wandb.init(
             project=args.wandb_project,
             name=args.wandb_name,
@@ -152,6 +162,8 @@ def main():
         trial.set_user_attr('model_name_or_path', args.model_name_or_path)
         trial.set_user_attr('use_4bit_quantization', args.use_4bit_quantization)
         trial.set_user_attr('data_dir', args.data_dir)
+        trial.set_user_attr('model_max_length', args.model_max_length)
+        trial.set_user_attr('num_train_epochs', args.num_train_epochs)
         trial.set_user_attr('accelerate_config', args.accelerate_config)
         trial.set_user_attr('run_name', args.run_name)
         trial.set_user_attr('output_dir', args.output_dir)
@@ -167,6 +179,7 @@ def main():
     def wandb_callback_current_best(study, trial):
         wandb.log({
             "current_best_mcc": study.best_trial.value,
+            # "current_best_f1": study.best_trial.value,
             "current_best_params": study.best_trial.params,
         })
 
@@ -174,28 +187,30 @@ def main():
                    n_trials=args.n_trials,
                    callbacks=[wandb_callback_current_best])
 
-    # optuna visualization
-    figures = {
-        "optimization_history": optuna.visualization.plot_optimization_history(study),
-        "slice_plot": optuna.visualization.plot_slice(study),
-        "parallel_coordinate": optuna.visualization.plot_parallel_coordinate(study),
-        "contour_plot": optuna.visualization.plot_contour(study),
-        "param_distribution": optuna.visualization.plot_param_importances(study)
-    }
-
-    for name, fig in figures.items():
-        file_path = f"{args.output_dir}/{name}.html"
-        fig.write_html(file_path)
-        print(f"Saved {name} to {file_path}")
+    # # optuna visualization
+    # figures = {
+    #     "optimization_history": optuna.visualization.plot_optimization_history(study),
+    #     "slice_plot": optuna.visualization.plot_slice(study),
+    #     "parallel_coordinate": optuna.visualization.plot_parallel_coordinate(study),
+    #     "contour_plot": optuna.visualization.plot_contour(study),
+    #     "param_distribution": optuna.visualization.plot_param_importances(study)
+    # }
+    #
+    # for name, fig in figures.items():
+    #     file_path = f"{args.output_dir}/{name}.html"
+    #     fig.write_html(file_path)
+    #     print(f"Saved {name} to {file_path}")
 
     best_trial = study.best_trial
     print(f"\nBest trial: {best_trial.number}")
     print(f"Best mcc: {best_trial.value}")
+    # print(f"Best f1: {best_trial.value}")
     print(f"Best params: {best_trial.params}")
 
     # wandb logging
     wandb.log({
         "best_trial_mcc": best_trial.value,
+        # "best_trial_f1": best_trial.value,
         "best_trial_params": best_trial.params,
     })
 
