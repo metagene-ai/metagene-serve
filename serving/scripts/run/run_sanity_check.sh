@@ -5,7 +5,7 @@ RUN_DIR=$(dirname "$(readlink -f "$0")")
 CORE_DIR=$(dirname "$(dirname "$RUN_DIR")")
 SET_DIR="${CORE_DIR}/scripts/set"
 
-MAMBA_ENV="metagene-1-evaluate"
+MAMBA_ENV="metagene-evaluate"
 eval "$(mamba shell hook --shell bash)" && mamba activate "${MAMBA_ENV}"
 source "${SET_DIR}/env/set_vars.sh"
 

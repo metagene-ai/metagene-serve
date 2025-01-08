@@ -29,7 +29,7 @@ else
     # the ACCESS SDSC Expanse env
     export CLUSTER_NAME="sdsc expanse"
     echo "Env name: ${CLUSTER_NAME}"
-    export PROJECT_ACCOUNT="mia346"
+    export PROJECT_ACCOUNT="wis189"
 
     export HOME_PREFIX="/home1/$USER/workspace"
     export PROJECT_PREFIX="/expanse/lustre/projects/${PROJECT_ACCOUNT}/$USER/projects"
@@ -48,11 +48,10 @@ fi
 # mkdir -p "$SCRATCH_PREFIX"
 
 # the following PROJECT_POSTFIX hopefully would be the only variable to change for different projects
-# MGFM-serving: the folder containing the Github repo for development
-# MGFM: the parent folder used for deployment using PyCharm or a simple wrapper around the code repo
-export PROJECT_POSTFIX="MGFM/MGFM-serving"
+export SUBPROJET_POSTFIX="serve"
+export PROJECT_POSTFIX="metagene/metagene-${SUBPROJET_POSTFIX}"
 export PYTHONPATH="${HOME_PREFIX}/${PROJECT_POSTFIX}":$PYTHONPATH
-export PYTHONPATH="${HOME_PREFIX}/${PROJECT_POSTFIX}/serving":$PYTHONPATH
+export PYTHONPATH="${HOME_PREFIX}/${PROJECT_POSTFIX}/${SUBPROJET_POSTFIX}":$PYTHONPATH
 
 export PROJECT_DIR="${PROJECT_PREFIX}/${PROJECT_POSTFIX}"
 export ENV_DIR="${PROJECT_PREFIX}/envs"
