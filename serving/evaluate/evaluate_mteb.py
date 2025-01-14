@@ -2,7 +2,7 @@ import argparse
 import json
 import os
 import sys
-sys.path.append("/home1/shangsha/workspace/MGFM/MGFM-serving/serving/evaluate/gene-mteb")
+sys.path.append("/home1/shangsha/workspace/metagene/gene-mteb")
 import mteb
 from tqdm import tqdm
 from transformers.trainer_utils import set_seed

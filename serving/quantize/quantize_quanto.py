@@ -23,7 +23,6 @@ def main():
     args = parse_args()
     model_dir = f"{args.model_dir}/{args.model_ckpt}"
     model_dir_4bit = f"{args.model_dir_4bit}/{args.model_ckpt}"
-    model_dir_8bit = f"{args.model_dir_8bit}/{args.model_ckpt}"
 
     tokenizer = PreTrainedTokenizerFast.from_pretrained(model_dir)
 
