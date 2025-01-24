@@ -5,12 +5,9 @@ import torch
 
 
 if __name__ == "__main__":
+    set_seed(42)
+
     model_name_or_path = "metagene-ai/METAGENE-1"
-    seed = 42
-    set_seed(seed)
-
-    batch_size = 32
-
     tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
     model = AutoModel.from_pretrained(
         model_name_or_path,
@@ -27,6 +24,7 @@ if __name__ == "__main__":
 
     embeddings = []
 
+    batch_size = 32
     for i in range(0, len(sentences), batch_size):
         batch = sentences[i:i + batch_size]
 
@@ -35,8 +33,7 @@ if __name__ == "__main__":
             padding=True,
             truncation=True,
             max_length=512,
-            return_tensors="pt"
-        ).to(model.device)
+            return_tensors="pt").to(model.device)
 
         # Remove `token_type_ids` if it exists
         if "token_type_ids" in inputs:

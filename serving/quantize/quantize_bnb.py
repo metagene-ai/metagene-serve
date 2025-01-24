@@ -1,40 +1,25 @@
-import argparse
-import random
-import time
 import torch
 from transformers import PreTrainedTokenizerFast, AutoModelForCausalLM, BitsAndBytesConfig
+from transformers.trainer_utils import set_seed
 
-
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--model_dir", type=str)
-    parser.add_argument("--model_dir_4bit", type=str)
-    parser.add_argument("--model_dir_8bit", type=str)
-    parser.add_argument("--model_ckpt", type=str)
-    args = parser.parse_args()
-
-    args.model_dir = args.model_dir or "/project/neiswang_1391/MGFM/MGFM-serving/model_ckpts/safetensors"
-    args.model_dir_4bit = args.model_dir_4bit or "/project/neiswang_1391/MGFM/MGFM-serving/model_ckpts/safetensors/bnb-4bit"
-    args.model_dir_8bit = args.model_dir_8bit or "/project/neiswang_1391/MGFM/MGFM-serving/model_ckpts/safetensors/bnb-8bit"
-    args.model_ckpt = args.model_ckpt or "step-00086000"
-    return args
 
 def main():
-    args = parse_args()
-    model_dir = f"{args.model_dir}/{args.model_ckpt}"
-    model_dir_4bit = f"{args.model_dir_4bit}/{args.model_ckpt}"
-    model_dir_8bit = f"{args.model_dir_8bit}/{args.model_ckpt}"
+    set_seed(42)
 
-    tokenizer = PreTrainedTokenizerFast.from_pretrained(model_dir)
+    model_name_or_path = "metagene-ai/METAGENE-1"
+    model_dir_4bit = "./quantized_models/bnb-4bit"
+    model_dir_8bit = "./quantized_models/bnb-8bit"
 
-    print(f"Bnb 4bit quantization with {model_dir} ...")
+    tokenizer = PreTrainedTokenizerFast.from_pretrained(model_name_or_path)
+
+    print(f"Running bnb 4bit quantization ...")
     quant_config_bnb_4bit = BitsAndBytesConfig(
         load_in_4bit=True,
         bnb_4bit_quant_type="nf4",
         bnb_4bit_use_double_quant=True,
         bnb_4bit_compute_dtype=torch.bfloat16)
     model_bnb_4bit = AutoModelForCausalLM.from_pretrained(
-        model_dir,
+        model_name_or_path,
         quantization_config=quant_config_bnb_4bit,
         device_map="auto")
     model_bnb_4bit.save_pretrained(model_dir_4bit)
@@ -43,11 +28,11 @@ def main():
 
     del model_bnb_4bit # release memory
 
-    print(f"Bnb 8bit quantization with {model_dir} ...")
+    print(f"Running bnb 8bit quantization ...")
     quant_config_bnb_8bit = BitsAndBytesConfig(
         load_in_8bit=True)
     model_bnb_8bit = AutoModelForCausalLM.from_pretrained(
-        model_dir,
+        model_name_or_path,
         quantization_config=quant_config_bnb_8bit,
         device_map="auto")
     model_bnb_8bit.save_pretrained(model_dir_8bit)
