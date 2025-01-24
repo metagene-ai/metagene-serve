@@ -1,4 +1,5 @@
 from awq import AutoAWQForCausalLM
+import os
 from transformers import PreTrainedTokenizerFast, AwqConfig
 from transformers.trainer_utils import set_seed
 
@@ -8,6 +9,7 @@ def main():
 
     model_name_or_path = "metagene-ai/METAGENE-1"
     model_dir_4bit = "./quantized_models/awq-4bit"
+    os.makedirs(model_dir_4bit, exist_ok=True)
 
     calib_data = []
     with open("./assets/data/sample_reads.csv", "r") as f:

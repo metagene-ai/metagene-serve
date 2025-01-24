@@ -1,4 +1,5 @@
 from optimum.quanto import QuantizedModelForCausalLM, qint4, freeze
+import os
 from transformers import AutoModelForCausalLM, PreTrainedTokenizerFast
 from transformers.trainer_utils import set_seed
 
@@ -8,6 +9,7 @@ def main():
 
     model_name_or_path = "metagene-ai/METAGENE-1"
     model_dir_4bit = "./quantized_models/quanto-4bit"
+    os.mkdir(model_dir_4bit, exist_ok=True)
 
     print(f"Running quanto 4bit quantization ...")
 

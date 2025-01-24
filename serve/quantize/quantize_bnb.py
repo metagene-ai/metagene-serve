@@ -1,3 +1,4 @@
+import os
 import torch
 from transformers import PreTrainedTokenizerFast, AutoModelForCausalLM, BitsAndBytesConfig
 from transformers.trainer_utils import set_seed
@@ -9,6 +10,8 @@ def main():
     model_name_or_path = "metagene-ai/METAGENE-1"
     model_dir_4bit = "./quantized_models/bnb-4bit"
     model_dir_8bit = "./quantized_models/bnb-8bit"
+    os.makedirs(model_dir_4bit, exist_ok=True)
+    os.makedirs(model_dir_8bit, exist_ok=True)
 
     tokenizer = PreTrainedTokenizerFast.from_pretrained(model_name_or_path)
 
