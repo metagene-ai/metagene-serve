@@ -4,9 +4,6 @@
 
 conda clean -a -y
 
-# create a new conda environment
-conda create -n metagene python=3.10 -y
-
 # cuda, gcc/g++, and torch
 conda install cuda -c nvidia/label/cuda-11.8.0 -y
 conda install pytorch=2.4.1 pytorch-cuda=11.8 -c pytorch -c nvidia -y
